@@ -240,6 +240,18 @@ class Desktop < Hashie::Trash
     cache[key]
   end
 
+  def self.avail
+    SystemCommand.avail_desktops(user: ENV['USER'])
+                 .tap(&:raise_unless_successful)
+                 .stdout
+                 .each_line.map do |line|
+      data = line.split("\t")
+      home = data[2].empty? ? nil : data[2]
+      verified = (data[3].chomp == 'Verified')
+      new(name: data[0], summary: data[1], homepage: home, verified: verified)
+    end
+  end
+
   def self.default(user:)
     config = DesktopConfig.fetch(user: user)
     self[config.desktop]

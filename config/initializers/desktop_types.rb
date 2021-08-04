@@ -30,32 +30,44 @@
 # NOTE: All desktops must be stubbed in the spec
 return if ENV['RACK_ENV'] == 'test'
 
+first = true
+
 # Periodically reload and verify the desktops
+# NOTE: This shouldn't have a timeout as it risks the trap not being reset
+#       Instead this should run in-frequently enough that a timeout isn't required
 opts = {
   execution_interval: FlightDesktopRestAPI.config.refresh_rate,
-  timeout_interval: (FlightDesktopRestAPI.config.refresh_rate - 1),
   run_now: true
 }
 Concurrent::TimerTask.new(**opts) do |task|
-  models = SystemCommand.avail_desktops(user: ENV['USER'])
-                        .tap(&:raise_unless_successful)
-                        .stdout
-                        .each_line.map do |line|
-    data = line.split("\t")
-    home = data[2].empty? ? nil : data[2]
-    verified = (data[3].chomp == 'Verified')
-    Desktop.new(name: data[0], summary: data[1], homepage: home, verified: verified)
+  # Get the current available desktops
+  models = Desktop.avail
+
+  old_usr2_trap = nil
+  begin
+    # Disable SIGUSR1 and SIGUSR2
+    # The flight desktop post-verify *may* attempt a reload by sending USR2
+    # This can result in an infinite reload loop. Instead USR2 needs to be temporarily
+    # disabled.
+    usr2_count = 0
+    old_usr2_trap = trap('USR2') { usr2_count+=1 }
+
+    # Verify each of the desktops
+    models.each { |m| m.verify_desktop(user: ENV['USER']) }
+    hash = models.map { |m| [m.name, m] }.to_h
+    Desktop.instance_variable_set(:@cache, hash)
+
+    DEFAULT_LOGGER.info "Finished #{'re' unless first}loading the desktops"
+    first = false
+
+  ensure
+    # Re-enable reloads
+    trap('USR2', old_usr2_trap) if old_usr2_trap
   end
 
-  # Set the state of the desktops
-  # NOTE: The results of avail will contained the previously cached state
-  hash = models.map { |m| [m.name, m] }.to_h
-  Desktop.instance_variable_set(:@cache, hash)
-
-  # Verify each of the desktops
-  models.each { |m| m.verify_desktop(user: ENV['USER']) }
-  hash = models.map { |m| [m.name, m] }.to_h
-  Desktop.instance_variable_set(:@cache, hash)
-
-  DEFAULT_LOGGER.info "Finished #{'re' unless first}loading the desktops"
+  # Checks if USR2 was received the expected number of times
+  # NOTE: flight-desktop will either send USR2 once for every desktop or not at all
+  # Any other amount indicates the user sent USR2 and the workers should restart
+  num_verified = models.select(&:verified).length
+  Process.kill('USR2', Process.pid) unless [0, num_verified].include?(usr2_count)
 end.execute
