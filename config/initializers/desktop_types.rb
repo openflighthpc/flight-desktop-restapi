@@ -30,12 +30,6 @@
 # NOTE: All desktops must be stubbed in the spec
 return if ENV['RACK_ENV'] == 'test'
 
-if FlightDesktopRestAPI.config.full_refresh < 1
-  raise 'full_refresh must be greater than 0!'
-end
-first = true
-count = 0
-
 # Periodically reload and verify the desktops
 opts = {
   execution_interval: FlightDesktopRestAPI.config.refresh_rate,
@@ -53,21 +47,15 @@ Concurrent::TimerTask.new(**opts) do |task|
     Desktop.new(name: data[0], summary: data[1], homepage: home, verified: verified)
   end
 
-  # Set the initial state of the desktops
+  # Set the state of the desktops
+  # NOTE: The results of avail will contained the previously cached state
   hash = models.map { |m| [m.name, m] }.to_h
   Desktop.instance_variable_set(:@cache, hash)
 
-  # Perform the additional verification step (when required).
-  if count == 0
-    models.each { |m| m.verify_desktop(user: ENV['USER']) }
-    hash = models.map { |m| [m.name, m] }.to_h
-    Desktop.instance_variable_set(:@cache, hash)
-  end
+  # Verify each of the desktops
+  models.each { |m| m.verify_desktop(user: ENV['USER']) }
+  hash = models.map { |m| [m.name, m] }.to_h
+  Desktop.instance_variable_set(:@cache, hash)
 
   DEFAULT_LOGGER.info "Finished #{'re' unless first}loading the desktops"
-  first = false
-  count += 1
-  if count >= FlightDesktopRestAPI.config.full_refresh
-    count = 0
-  end
 end.execute
