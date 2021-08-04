@@ -49,10 +49,6 @@ Concurrent::TimerTask.new(**opts) do |task|
 
     # Verify each of the desktops
     models.each { |m| m.verify_desktop(user: ENV['USER']) }
-
-    DEFAULT_LOGGER.info "Finished #{'re' unless first}loading the desktops"
-    first = false
-
   ensure
     # Re-enable the reload integration with flight-desktop
     FileUtils.mkdir_p File.dirname(FlightDesktopRestAPI.config.integrated_reload_dst)
@@ -65,4 +61,7 @@ Concurrent::TimerTask.new(**opts) do |task|
   # whilst the integration is disabled
   hash = Desktop.avail.map { |m| [m.name, m] }.to_h
   Desktop.instance_variable_set(:@cache, hash)
+
+  DEFAULT_LOGGER.info "Finished #{'re' unless first}loading the desktops"
+  first = false
 end.execute
