@@ -43,14 +43,9 @@ Concurrent::TimerTask.new(**opts) do |task|
   # Get the current available desktops
   models = Desktop.avail
 
-  old_usr2_trap = nil
   begin
-    # Disable SIGUSR1 and SIGUSR2
-    # The flight desktop post-verify *may* attempt a reload by sending USR2
-    # This can result in an infinite reload loop. Instead USR2 needs to be temporarily
-    # disabled.
-    usr2_count = 0
-    old_usr2_trap = trap('USR2') { usr2_count+=1 }
+    # Disable the reload integration with flight-desktop
+    FileUtils.rm_f FlightDesktopRestAPI.config.integrated_reload_dst
 
     # Verify each of the desktops
     models.each { |m| m.verify_desktop(user: ENV['USER']) }
@@ -61,13 +56,9 @@ Concurrent::TimerTask.new(**opts) do |task|
     first = false
 
   ensure
-    # Re-enable reloads
-    trap('USR2', old_usr2_trap) if old_usr2_trap
+    # Re-enable the reload integration with flight-desktop
+    FileUtils.mkdir_p File.dirname(FlightDesktopRestAPI.config.integrated_reload_dst)
+    FileUtils.ln_sf FlightDesktopRestAPI.config.integrated_reload_src, \
+      FlightDesktopRestAPI.config.integrated_reload_dst
   end
-
-  # Checks if USR2 was received the expected number of times
-  # NOTE: flight-desktop will either send USR2 once for every desktop or not at all
-  # Any other amount indicates the user sent USR2 and the workers should restart
-  num_verified = models.select(&:verified).length
-  Process.kill('USR2', Process.pid) unless [0, num_verified].include?(usr2_count)
 end.execute

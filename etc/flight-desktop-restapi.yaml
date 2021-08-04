@@ -90,6 +90,30 @@
 # sso_cookie_name: flight_login
 
 # =============================================================================
+# Integrated Reload Source/Destination
+# There is an integration point between flight-deskopt-restapi and
+# flight-desktop which will reload the service when a new desktop is verified.
+#
+# The restapi needs control over this integration to prevent it getting caught
+# in a reload loop.
+#
+# The integrated_reload_src should be a script that will trigger the service
+# to restart. This script must not be located within flight-desktop hooks
+# directory.
+#
+# The integrated_reload_dst is the location the script will be linked to this.
+# This will enable the integration and should be within flight-desktop hook
+# directory.
+#
+# The environment variables flight_DESKTOP_RESTAPI_integrated_reload_src and
+# flight_DESKTOP_RESTAPI_integrated_reload_dst will take precedence.
+#
+# Relative paths are expanded from the installation directory.
+# =============================================================================
+# integrated_reload_src: libexec/desktop-restapi/reload-desktop-restapi
+# integrated_reload_dst: libexec/desktop/hooks/post-verify/reload-desktop-restapi
+
+# =============================================================================
 # Log Level
 # Specify which level of logging should be used. The supported values are:
 # fatal, error, warn, info, or debug

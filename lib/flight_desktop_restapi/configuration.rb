@@ -63,6 +63,13 @@ module FlightDesktopRestAPI
         "640x480"
       ]
 
+    attribute 'integrated_reload_src',
+      default: 'libexec/desktop-restapi/reload-desktop-restapi',
+      transform: relative_to(root_path)
+    attribute 'integrated_reload_dst',
+      default: 'libexec/desktop/hooks/post-verify/reload-desktop-restapi',
+      transform: relative_to(root_path)
+
     def auth_decoder
       @auth_decoder ||= FlightAuth::Builder.new(shared_secret_path)
     end
