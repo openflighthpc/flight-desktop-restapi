@@ -49,8 +49,6 @@ Concurrent::TimerTask.new(**opts) do |task|
 
     # Verify each of the desktops
     models.each { |m| m.verify_desktop(user: ENV['USER']) }
-    hash = models.map { |m| [m.name, m] }.to_h
-    Desktop.instance_variable_set(:@cache, hash)
 
     DEFAULT_LOGGER.info "Finished #{'re' unless first}loading the desktops"
     first = false
@@ -61,4 +59,10 @@ Concurrent::TimerTask.new(**opts) do |task|
     FileUtils.ln_sf FlightDesktopRestAPI.config.integrated_reload_src, \
       FlightDesktopRestAPI.config.integrated_reload_dst
   end
+
+  # Re-load the desktops to ensure the verified status is up to date
+  # This prevents race conditions between the first verify running
+  # whilst the integration is disabled
+  hash = Desktop.avail.map { |m| [m.name, m] }.to_h
+  Desktop.instance_variable_set(:@cache, hash)
 end.execute
