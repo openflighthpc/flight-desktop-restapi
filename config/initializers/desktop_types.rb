@@ -57,8 +57,8 @@ Concurrent::TimerTask.new(**opts) do |task|
   end
 
   # Re-load the desktops to ensure the verified status is up to date
-  # This prevents race conditions between the first verify running
-  # whilst the integration is disabled
+  # This prevents a race condition if another desktop is verified whilst
+  # the integration is disabled
   hash = Desktop.avail.map { |m| [m.name, m] }.to_h
   Desktop.instance_variable_set(:@cache, hash)
 
