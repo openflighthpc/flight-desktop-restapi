@@ -43,6 +43,11 @@ class DesktopConfig < Hashie::Trash
     end
   end
 
+  class << self
+    # There is no fetch command for configs in flight-desktop, only set
+    alias_method :fetch, :update
+  end
+
   property :desktop
   property :geometry
 

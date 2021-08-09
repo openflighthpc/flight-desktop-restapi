@@ -122,8 +122,7 @@ end
 
 namespace '/configs' do
   get('/user') do
-    # There is no fetch command for configs in flight-desktop, only set
-    DesktopConfig.update(user: current_user).to_json
+    DesktopConfig.fetch(user: current_user).to_json
   end
 
   patch('/user') do
