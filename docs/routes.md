@@ -76,7 +76,11 @@ HTTP/2 200 OK
 {
   "id": "user",
   "desktop": <desktop-type>,
-  "geometry": <geometry>
+  "geometry": <geometry>,
+  "geometries": [
+    <geometry>,
+    ...
+  ]
 }
 ```
 

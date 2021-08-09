@@ -55,7 +55,8 @@ class DesktopConfig < Hashie::Trash
     {
       'id' => 'user',
       'desktop' => desktop,
-      'geometry' => geometry
+      'geometry' => geometry,
+      'geometries' => FlightDesktopRestAPI.config.xrandr_geometries
     }
   end
 
