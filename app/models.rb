@@ -115,15 +115,6 @@ class Session < Hashie::Trash
     end
   end
 
-  def self.start_default(user:)
-    cmd = SystemCommand.start_session(user: user)
-    if cmd.success?
-      build_from_output(cmd.stdout.split("\n"), user: user)
-    else
-      raise InternalServerError
-    end
-  end
-
   def self.build_from_output(lines, user:)
     lines = lines.split("\n") if lines.is_a?(String)
     data = lines.each_with_object({}) do |line, memo|
@@ -246,6 +237,11 @@ class Desktop < Hashie::Trash
 
   def self.[](key)
     cache[key]
+  end
+
+  def self.default(user:)
+    config = DesktopConfig.fetch(user: user)
+    self[config.desktop]
   end
 
   private_class_method

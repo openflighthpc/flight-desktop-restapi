@@ -179,7 +179,7 @@ namespace '/sessions' do
     if params[:desktop]
       current_desktop.start_session!(user: current_user).to_json
     else
-      Session.start_default(user: current_user).to_json
+      Desktop.default(user: current_user).start_session!(user: current_user).to_json
     end
   end
 
