@@ -120,6 +120,19 @@ namespace '/ping' do
   end
 end
 
+namespace '/configs' do
+  get('/user') do
+    DesktopConfig.fetch(user: current_user).to_json
+  end
+
+  patch('/user') do
+    update = params.slice('geometry', 'desktop')
+                   .map { |k, v| [k.to_sym, v] }
+                   .to_h
+    DesktopConfig.update(**update, user: current_user).to_json
+  end
+end
+
 namespace '/desktops' do
   get do
     { 'data' => Desktop.index }.to_json
@@ -163,7 +176,11 @@ namespace '/sessions' do
 
   post do
     status 201
-    current_desktop.start_session!(user: current_user).to_json
+    if params[:desktop]
+      current_desktop.start_session!(user: current_user).to_json
+    else
+      Desktop.default(user: current_user).start_session!(user: current_user).to_json
+    end
   end
 
   namespace('/:id') do

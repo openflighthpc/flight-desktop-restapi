@@ -46,6 +46,23 @@ module FlightDesktopRestAPI
       root = ENV.fetch('flight_ROOT', '/opt/flight')
       "#{File.join(root, 'bin/flight')} desktop"
     end
+    attribute 'xrandr_geometries',
+      transform: ->(v) { v.is_a?(Array) ? v : v.to_s.split(',') },
+      default: [
+        "1920x1200",
+        "1920x1080",
+        "1600x1200",
+        "1680x1050",
+        "1400x1050",
+        "1360x768",
+        "1280x1024",
+        "1280x960",
+        "1280x800",
+        "1280x720",
+        "1024x768",
+        "800x600",
+        "640x480"
+      ]
 
     def auth_decoder
       @auth_decoder ||= FlightAuth::Builder.new(shared_secret_path)

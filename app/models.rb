@@ -30,6 +30,41 @@
 require 'base64'
 require 'time'
 
+class DesktopConfig < Hashie::Trash
+  include Hashie::Extensions::Dash::Coercion
+
+  def self.update(user:, **opts)
+    cmd = SystemCommand.set(user: user, **opts)
+    if cmd.success?
+      parts = cmd.stdout.split("\n").map { |s| s.split("\s").last }
+      new(desktop: parts.first, geometry: parts[1])
+    else
+      raise InternalServerError
+    end
+  end
+
+  class << self
+    # There is no fetch command for configs in flight-desktop, only set
+    alias_method :fetch, :update
+  end
+
+  property :desktop
+  property :geometry
+
+  def as_json(_ = {})
+    {
+      'id' => 'user',
+      'desktop' => desktop,
+      'geometry' => geometry,
+      'geometries' => FlightDesktopRestAPI.config.xrandr_geometries
+    }
+  end
+
+  def to_json
+    as_json.to_json
+  end
+end
+
 class Session < Hashie::Trash
   include Hashie::Extensions::Dash::Coercion
 
@@ -203,6 +238,11 @@ class Desktop < Hashie::Trash
 
   def self.[](key)
     cache[key]
+  end
+
+  def self.default(user:)
+    config = DesktopConfig.fetch(user: user)
+    self[config.desktop]
   end
 
   private_class_method
