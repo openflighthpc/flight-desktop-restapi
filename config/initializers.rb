@@ -26,22 +26,11 @@
 # https://github.com/openflighthpc/flight-desktop-restapi
 #===============================================================================
 
-ENV['RACK_ENV'] ||= 'development'
-ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __dir__)
+require_relative 'initializers/logger'
 
-require 'rubygems'
-require 'bundler'
-require 'json'
-
-if ENV['RACK_ENV'] == 'development'
-  Bundler.require(:default, :development)
-elsif ENV['RACK_ENV'] == 'test'
-  Bundler.require(:default, :test)
-else
-  Bundler.require(:default)
-end
-
-lib = File.expand_path('../lib', __dir__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-
-require 'flight_desktop_restapi'
+# We need to require some files to run the desktop_types initializer.  We
+# should replace these requires with suitable `autoload`s.
+require_relative '../app/system_command'
+require_relative '../app/errors'
+require_relative '../app/models'
+require_relative 'initializers/desktop_types'
