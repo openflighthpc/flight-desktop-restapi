@@ -31,6 +31,9 @@ require_relative 'config/boot.rb'
 
 require 'sinatra'
 
+# Ensures the shared secret exists
+FlightDesktopRestAPI.config.auth_decoder
+
 configure do
   set :show_exceptions, :after_handler
   set :logger, DEFAULT_LOGGER
