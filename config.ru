@@ -27,7 +27,13 @@
 # https://github.com/openflighthpc/flight-desktop-restapi
 #===============================================================================
 
-require_relative 'config/boot.rb'
+require_relative 'config/boot'
+
+# Ensures the shared secret exists
+FlightDesktopRestAPI.config.auth_decoder
+
+require_relative 'config/initializers'
+require_relative 'app'
 
 require 'sinatra'
 
