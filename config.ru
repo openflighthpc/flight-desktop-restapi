@@ -43,11 +43,6 @@ configure do
   enable :logging
 end
 
-at_exit do
-  # Disable the flight-desktop integration on exit
-  FileUtils.rm_f FlightDesktopRestAPI.config.integrated_reload_dst
-end
-
 app = Rack::Builder.new do
   map('/v2') { run Sinatra::Application }
 end

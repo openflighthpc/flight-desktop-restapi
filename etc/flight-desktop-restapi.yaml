@@ -49,12 +49,8 @@
 # are checked and verified.This check will be made at intervals given by the
 # 'refresh_rate'.
 #
-# The environment variables flight_DESKTOP_RESTAPI_refresh_rate and
-# flight_DESKTOP_RESTAPI_full_refresh takes precedence.
-#
-# DEPRECATED: Obsolete full_refresh config
-# Previously there were two types of checks: a "quick" and "full". The quick
-# refreshes are no longer required, so all checks will be a "full refresh".
+# The environment variable flight_DESKTOP_RESTAPI_refresh_rate takes
+# precedence.
 # =============================================================================
 # refresh_rate: 3600
 
@@ -88,30 +84,6 @@
 # precedence.
 # =============================================================================
 # sso_cookie_name: flight_login
-
-# =============================================================================
-# Integrated Reload Source/Destination
-# There is an integration point between flight-deskopt-restapi and
-# flight-desktop which will reload the service when a new desktop is verified.
-#
-# The restapi needs control over this integration to prevent it getting caught
-# in a reload loop.
-#
-# The integrated_reload_src should be a script that will trigger the service
-# to restart. This script must not be located within flight-desktop hooks
-# directory.
-#
-# The integrated_reload_dst is the location the script will be linked to this.
-# This will enable the integration and should be within flight-desktop hook
-# directory.
-#
-# The environment variables flight_DESKTOP_RESTAPI_integrated_reload_src and
-# flight_DESKTOP_RESTAPI_integrated_reload_dst will take precedence.
-#
-# Relative paths are expanded from the installation directory.
-# =============================================================================
-# integrated_reload_src: libexec/desktop-restapi/reload-desktop-restapi
-# integrated_reload_dst: libexec/desktop/hooks/post-verify/reload-desktop-restapi
 
 # =============================================================================
 # Log Level
