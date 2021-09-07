@@ -42,6 +42,14 @@ Concurrent::TimerTask.new(**opts) do |task|
   # Determine which desktops are available.  A `verify --force` is ran for
   # each desktop to ensure we have an accurate list.
   models = Desktop.avail
+  if first
+    # The first go round, populate the list of available desktops as soon as
+    # possible.  Whether they are verified or not may not be entirely
+    # accurate, but this is better than having no desktop types to display.
+    hash = models.map { |m| [m.name, m] }.to_h
+    Desktop.instance_variable_set(:@cache, hash)
+  end
+
   models.each { |m| m.verify_desktop(user: ENV['USER']) }
   hash = models.map { |m| [m.name, m] }.to_h
   Desktop.instance_variable_set(:@cache, hash)
