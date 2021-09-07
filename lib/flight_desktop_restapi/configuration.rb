@@ -63,6 +63,8 @@ module FlightDesktopRestAPI
         "640x480"
       ]
 
+    attribute 'verify_sleep', default: 0.5
+
     def auth_decoder
       @auth_decoder ||= FlightAuth::Builder.new(shared_secret_path)
     end

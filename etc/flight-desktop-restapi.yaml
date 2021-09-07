@@ -55,6 +55,18 @@
 # refresh_rate: 3600
 
 # =============================================================================
+# Verify Sleep
+# How long in seconds to wait between verifying each desktop `verify_sleep`.
+# The desktop types are periodically verified.  This setting is used to add a
+# slight delay between verifying them to prevent the API from becomining
+# unresponsive.
+#
+# The environment variable flight_DESKTOP_RESTAPI_verify_sleep takes
+# precedence.
+# =============================================================================
+# verify_sleep: 0.5
+
+# =============================================================================
 # Desktop Command
 #
 # The prefix used to run the flight-desktop command line utility

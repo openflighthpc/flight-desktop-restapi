@@ -50,7 +50,10 @@ Concurrent::TimerTask.new(**opts) do |task|
     Desktop.instance_variable_set(:@cache, hash)
   end
 
-  models.each { |m| m.verify_desktop(user: ENV['USER']) }
+  models.each do |m|
+    sleep FlightDesktopRestAPI.config.verify_sleep
+    m.verify_desktop(user: ENV['USER'])
+  end
   hash = models.map { |m| [m.name, m] }.to_h
   Desktop.instance_variable_set(:@cache, hash)
 
