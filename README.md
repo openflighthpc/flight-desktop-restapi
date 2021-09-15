@@ -88,7 +88,7 @@ Making changes to the default configuration is optional and can be achieved by e
 
 This version has been tested with:
 
-`flight-desktop` version `1.5.0`
+`flight-desktop` version `1.8.0`
 
 ## Operation
 
