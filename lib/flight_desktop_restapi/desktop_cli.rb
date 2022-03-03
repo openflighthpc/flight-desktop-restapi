@@ -1,4 +1,3 @@
-# frozen_string_literal: true
 #==============================================================================
 # Copyright (C) 2020-present Alces Flight Ltd.
 #
@@ -51,7 +50,7 @@ module FlightDesktopRestAPI
       end
 
       def start_session(desktop, user:)
-        new(*flight_desktop, 'start', desktop, user: user).run
+        new(*flight_desktop, 'start', desktop, user: user).run_remote
       end
 
       def webify_session(id, user:)
@@ -113,6 +112,26 @@ module FlightDesktopRestAPI
             username: @user,
           )
           sp.run(@cmd, @stdin, &block)
+        end
+      parse_result(result)
+      log_command(result)
+      result
+    end
+
+    def run_remote(&block)
+      host = Flight.config.hosts.first
+      result =
+        self.class.mutexes[@user].synchronize do
+          Flight.logger.debug("Running remote process (#{@user}@#{host}): #{stringified_cmd}")
+          process = RemoteProcess.new(
+            env: @env,
+            host: host,
+            keys: [Flight.config.private_key_path],
+            logger: Flight.logger,
+            timeout: @timeout,
+            username: @user,
+          )
+          process.run(@cmd, @stdin, &block)
         end
       parse_result(result)
       log_command(result)

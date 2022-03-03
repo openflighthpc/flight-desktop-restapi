@@ -29,4 +29,5 @@ module FlightDesktopRestAPI
   autoload(:Configuration, 'flight_desktop_restapi/configuration')
   autoload(:DesktopCLI, 'flight_desktop_restapi/desktop_cli')
   autoload(:Subprocess, 'flight_desktop_restapi/subprocess')
+  autoload(:RemoteProcess, 'flight_desktop_restapi/remote_process')
 end
