@@ -34,11 +34,15 @@ first = true
 
 # Periodically reload and verify the desktops
 opts = {
-  execution_interval: FlightDesktopRestAPI.config.refresh_rate,
-  timeout_interval: (FlightDesktopRestAPI.config.refresh_rate - 1),
+  execution_interval: Flight.config.refresh_rate,
+  timeout_interval: (Flight.config.refresh_rate - 1),
   run_now: true
 }
+
+Flight.logger.debug("Starting timer task with #{opts.inspect}")
+
 Concurrent::TimerTask.new(**opts) do |task|
+  Flight.logger.info("#{first ? 'L' : 'Rel'}oading the desktops")
   # Determine which desktops are available.  A `verify --force` is ran for
   # each desktop to ensure we have an accurate list.
   models = Desktop.avail
@@ -51,12 +55,12 @@ Concurrent::TimerTask.new(**opts) do |task|
   end
 
   models.each do |m|
-    sleep FlightDesktopRestAPI.config.verify_sleep
+    sleep Flight.config.verify_sleep
     m.verify_desktop(user: ENV['USER'])
   end
   hash = models.map { |m| [m.name, m] }.to_h
   Desktop.instance_variable_set(:@cache, hash)
 
-  DEFAULT_LOGGER.info "Finished #{'re' unless first}loading the desktops"
+  Flight.logger.info "Finished #{'re' unless first}loading the desktops"
   first = false
 end.execute

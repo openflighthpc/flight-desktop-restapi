@@ -29,5 +29,6 @@
 
 require_relative 'boot.rb'
 
-bind FlightDesktopRestAPI.config.bind_address
-tag FlightDesktopRestAPI.config.class.application_name
+bind Flight.config.bind_address
+log_requests
+tag Flight.config.class.application_name

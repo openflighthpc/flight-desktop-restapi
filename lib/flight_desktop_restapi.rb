@@ -27,15 +27,6 @@
 
 module FlightDesktopRestAPI
   autoload(:Configuration, 'flight_desktop_restapi/configuration')
-
-  class << self
-    def app
-      # XXX: Eventually extract this to a Application object when the need arises
-      @app ||= Struct.new(:config).new(Configuration.load)
-    end
-
-    def config
-      app.config
-    end
-  end
+  autoload(:DesktopCLI, 'flight_desktop_restapi/desktop_cli')
+  autoload(:Subprocess, 'flight_desktop_restapi/subprocess')
 end

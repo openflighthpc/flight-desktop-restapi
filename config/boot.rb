@@ -26,12 +26,14 @@
 # https://github.com/openflighthpc/flight-desktop-restapi
 #===============================================================================
 
+# Boot as little of the app as possible.  Just enough to be able to load the
+# configuration.
+
 ENV['RACK_ENV'] ||= 'development'
 ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __dir__)
 
 require 'rubygems'
 require 'bundler'
-require 'json'
 
 if ENV['RACK_ENV'] == 'development'
   Bundler.require(:default, :development)
@@ -41,7 +43,15 @@ else
   Bundler.require(:default)
 end
 
+# Limited use of dotenv to support setting flight_ENVIRONMENT.
+require 'dotenv'
+dot_files = [ '../.flight-environment' ].map do |file|
+  File.expand_path(file, __dir__)
+end
+Dotenv.load(*dot_files)
+
 lib = File.expand_path('../lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
+require 'flight'
 require 'flight_desktop_restapi'

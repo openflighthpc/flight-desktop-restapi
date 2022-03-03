@@ -76,6 +76,21 @@
 # =============================================================================
 # desktop_command: flight desktop
 
+# ==============================================================================
+# Command PATH
+# The PATH the desktop command will be executed with.
+# The environment variable flight_DESKTOP_RESTAPI_command_path takes precedence
+# ==============================================================================
+# command_path: /usr/sbin:/usr/bin:/sbin:/bin
+
+# ==============================================================================
+# Command Timeout
+# The maximum time to wait when running a desktop command. Commands which
+# take longer then this period will be terminated.
+# The environment variable flight_DESKTOP_RESTAPI_command_timeout takes precedence
+# ==============================================================================
+# command_timeout: 30
+
 # =============================================================================
 # Shared Secret Path
 # The path to the file containing the shared secret used to verify the login

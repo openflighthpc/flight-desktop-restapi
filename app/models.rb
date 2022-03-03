@@ -30,11 +30,13 @@
 require 'base64'
 require 'time'
 
+DesktopCLI = FlightDesktopRestAPI::DesktopCLI
+
 class DesktopConfig < Hashie::Trash
   include Hashie::Extensions::Dash::Coercion
 
   def self.update(user:, **opts)
-    cmd = SystemCommand.set(user: user, **opts)
+    cmd = DesktopCLI.set(user: user, **opts)
     if cmd.success?
       parts = cmd.stdout.split("\n").map { |s| s.split("\s").last }
       new(desktop: parts.first, geometry: parts[1])
@@ -56,7 +58,7 @@ class DesktopConfig < Hashie::Trash
       'id' => 'user',
       'desktop' => desktop,
       'geometry' => geometry,
-      'geometries' => FlightDesktopRestAPI.config.xrandr_geometries
+      'geometries' => Flight.config.xrandr_geometries
     }
   end
 
@@ -69,7 +71,7 @@ class Session < Hashie::Trash
   include Hashie::Extensions::Dash::Coercion
 
   def self.index(user:)
-    cmd = SystemCommand.index_sessions(user: user)
+    cmd = DesktopCLI.index_sessions(user: user)
     if cmd.success?
       cmd.stdout.split("\n").map do |line|
         parts = line.split("\t").map { |p| p.empty? ? nil : p }
@@ -94,7 +96,7 @@ class Session < Hashie::Trash
   end
 
   def self.find(id, reload: true, user:)
-    cmd = SystemCommand.find_session(id, user: user)
+    cmd = DesktopCLI.find_session(id, user: user)
     if cmd.success?
       session = build_from_output(cmd.stdout.split("\n"), user: user)
 
@@ -105,7 +107,7 @@ class Session < Hashie::Trash
       return session unless session.webport == '0' && session.state == 'Active'
 
       # Webify the session and reload
-      SystemCommand.webify_session(id, user: user)
+      DesktopCLI.webify_session(id, user: user)
       find(id, reload: false, user: user)
     else
       # Technically multiple errors conditions could cause the command to fail
@@ -215,15 +217,15 @@ class Session < Hashie::Trash
   end
 
   def kill(user:)
-    cmd = SystemCommand.kill_session(id, user: user)
+    cmd = DesktopCLI.kill_session(id, user: user)
     return true if cmd.success?
-    cmd = SystemCommand.clean_session(id, user: user)
+    cmd = DesktopCLI.clean_session(id, user: user)
     return true if cmd.success?
     raise InternalServerError.new(details: 'failed to delete the session')
   end
 
   def clean(user:)
-    if SystemCommand.clean_session(id, user: user).success?
+    if DesktopCLI.clean_session(id, user: user).success?
       true
     else
       raise InternalServerError.new(details: 'failed to clean the session')
@@ -241,14 +243,15 @@ class Desktop < Hashie::Trash
   end
 
   def self.avail
-    SystemCommand.avail_desktops(user: ENV['USER'])
-                 .tap(&:raise_unless_successful)
-                 .stdout
-                 .each_line.map do |line|
-      data = line.split("\t")
-      home = data[2].empty? ? nil : data[2]
-      verified = (data[3].chomp == 'Verified')
-      new(name: data[0], summary: data[1], homepage: home, verified: verified)
+    DesktopCLI.avail_desktops(user: ENV['USER'])
+      .tap { |result| raise InternalServerError unless result.success? }
+      .stdout
+      .each_line
+      .map do |line|
+        data = line.split("\t")
+        home = data[2].empty? ? nil : data[2]
+        verified = (data[3].chomp == 'Verified')
+        new(name: data[0], summary: data[1], homepage: home, verified: verified)
     end
   end
 
@@ -295,17 +298,17 @@ class Desktop < Hashie::Trash
   #         updated to return different exit codes
   def start_session!(user:)
     verify_desktop!(user: user) unless verified?
-    cmd = SystemCommand.start_session(name, user: user)
+    cmd = DesktopCLI.start_session(name, user: user)
     if /verified\Z/ =~ cmd.stderr
       verify_desktop!(user: user)
-      cmd = SystemCommand.start_session(name, user: user)
+      cmd = DesktopCLI.start_session(name, user: user)
     end
     raise InternalServerError unless cmd.success?
     Session.build_from_output(cmd.stdout.split("\n"), user: user)
   end
 
   def verify_desktop(user:)
-    cmd = SystemCommand.verify_desktop(name, user: user)
+    cmd = DesktopCLI.verify_desktop(name, user: user)
     self.verified = if /already been verified\.\Z/ =~ cmd.stdout.chomp
       true
     elsif /flight desktop prepare/ =~ cmd.stdout

@@ -9,14 +9,17 @@ GIT
 
 GIT
   remote: https://github.com/openflighthpc/flight_configuration
-  revision: 24928260e542768f13cc513a3a08af69f690dfbc
-  branch: 24928260e542768f13cc513a3a08af69f690dfbc
+  revision: 113ef4558feae2107813ae5cd7947cf3b8fb7c00
+  branch: master
+  tag: 0.6.1
   specs:
-    flight_configuration (0.1.0)
+    flight_configuration (0.6.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
+    activemodel (7.0.2.2)
+      activesupport (= 7.0.2.2)
     activesupport (7.0.2.2)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
@@ -26,6 +29,7 @@ GEM
     coderay (1.1.3)
     concurrent-ruby (1.1.9)
     diff-lcs (1.5.0)
+    dotenv (2.7.6)
     fakefs (1.4.1)
     hashie (5.0.0)
     i18n (1.10.0)
@@ -89,8 +93,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activemodel
   activesupport
   concurrent-ruby
+  dotenv
   fakefs
   flight_auth!
   flight_configuration!

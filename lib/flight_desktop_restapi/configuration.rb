@@ -25,27 +25,64 @@
 # https://github.com/openflighthpc/flight-desktop-restapi
 #===============================================================================
 
+require 'active_support/core_ext/hash/keys'
+require 'active_model'
+
+require 'flight_configuration'
 module FlightDesktopRestAPI
+  class ConfigError < StandardError; end
+
   class Configuration
-    extend FlightConfiguration::RackDSL
+    include FlightConfiguration::DSL
+    include FlightConfiguration::RichActiveValidationErrorMessage
+    include ActiveModel::Validations
 
-    root_path File.expand_path('../..', __dir__)
     application_name 'flight-desktop-restapi'
+    user_config_files false
 
-    attribute 'bind_address',       default: 'tcp://127.0.0.1:915'
-    attribute 'cors_domain',        required: false
-    attribute 'refresh_rate',       default: 3600
-    attribute 'log_level',          default: 'info'
-    attribute 'shared_secret_path', default: 'etc/shared-secret.conf',
-                                    transform: relative_to(root_path)
-    attribute 'sso_cookie_name',    default: 'flight_login'
-    attribute 'desktop_command',    default: ->() do
-      # TODO: Update to 'Flight.root' once migrated to the new version of
-      # flight_configuration
-      root = ENV.fetch('flight_ROOT', '/opt/flight')
-      "#{File.join(root, 'bin/flight')} desktop"
-    end
-    attribute 'xrandr_geometries',
+    attribute :bind_address, default: 'tcp://127.0.0.1:915'
+    validates :bind_address, presence: true
+
+    attribute :cors_domain,  required: false
+
+    attribute :refresh_rate, default: 3600,
+      transform: :to_i
+    validates :refresh_rate, numericality: true, allow_blank: false
+
+    attribute :shared_secret_path, default: 'etc/shared-secret.conf',
+      transform: relative_to(root_path)
+
+    attribute :sso_cookie_name, default: 'flight_login'
+
+    attribute :desktop_command,
+      default: File.join(ENV.fetch('flight_ROOT', '/opt/flight'), 'bin/flight desktop'),
+      transform: ->(value) { value.split(' ') }
+
+    attribute :command_path, default: '/usr/sbin:/usr/bin:/sbin:/bin'
+
+    attribute :command_timeout, default: 30,
+      transform: :to_f
+    validates :command_timeout, numericality: true, allow_blank: false
+
+    attribute :log_path, required: false,
+              default: '/dev/stdout',
+              transform: ->(path) do
+                if path
+                  relative_to(root_path).call(path).tap do |full_path|
+                    FileUtils.mkdir_p File.dirname(full_path)
+                  end
+                else
+                  $stderr
+                end
+              end
+
+    attribute :log_level, default: 'info'
+    validates :log_level, inclusion: {
+      within: %w(fatal error warn info debug disabled),
+      message: 'must be one of fatal, error, warn, info, debug or disabled'
+    }
+
+    attribute :xrandr_geometries,
       transform: ->(v) { v.is_a?(Array) ? v : v.to_s.split(',') },
       default: [
         "1920x1200",
@@ -63,11 +100,19 @@ module FlightDesktopRestAPI
         "640x480"
       ]
 
-    attribute 'verify_sleep', default: 0.5
+    attribute :verify_sleep, default: 0.5, transform: :to_f
+    validates :verify_sleep, numericality: true, allow_blank: false
+
+    validate do
+      begin
+        auth_decoder
+      rescue
+        errors.add(:shared_secret_path, $!.message)
+      end
+    end
 
     def auth_decoder
       @auth_decoder ||= FlightAuth::Builder.new(shared_secret_path)
     end
   end
 end
-
