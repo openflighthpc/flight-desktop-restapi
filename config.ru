@@ -28,19 +28,18 @@
 #===============================================================================
 
 require_relative 'config/boot'
-
-# Ensures the shared secret exists
-FlightDesktopRestAPI.config.auth_decoder
-
+require_relative 'config/post_boot'
 require_relative 'config/initializers'
 require_relative 'app'
 
 require 'sinatra'
 
 configure do
-  set :show_exceptions, :after_handler
-  set :logger, DEFAULT_LOGGER
-  enable :logging
+  LOGGER = Flight.logger
+  use Rack::CommonLogger, LOGGER
+
+  enable :logging, :dump_errors
+  set :raise_errors, true
 end
 
 app = Rack::Builder.new do

@@ -1,0 +1,168 @@
+# frozen_string_literal: true
+#==============================================================================
+# Copyright (C) 2020-present Alces Flight Ltd.
+#
+# This file is part of FlightDesktopRestAPI.
+#
+# This program and the accompanying materials are made available under
+# the terms of the Eclipse Public License 2.0 which is available at
+# <https://www.eclipse.org/legal/epl-2.0>, or alternative license
+# terms made available by Alces Flight Ltd - please direct inquiries
+# about licensing to licensing@alces-flight.com.
+#
+# FlightDesktopRestAPI is distributed in the hope that it will be useful, but
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR
+# IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS
+# OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+# PARTICULAR PURPOSE. See the Eclipse Public License 2.0 for more
+# details.
+#
+# You should have received a copy of the Eclipse Public License 2.0
+# along with FlightDesktopRestAPI. If not, see:
+#
+#  https://opensource.org/licenses/EPL-2.0
+#
+# For more information on FlightDesktopRestAPI, please visit:
+# https://github.com/openflighthpc/flight-desktop-restapi
+#===============================================================================
+
+require 'etc'
+require 'pathname'
+require 'securerandom'
+
+module FlightDesktopRestAPI
+  class DesktopCLI
+    class << self
+      # Used to ensure each user is only running a single command at at time
+      # NOTE: These objects will be indefinitely cached in memory until the server
+      #       is restarted. This may constitute a memory leak if an indefinite
+      #       number of users access the service.
+      #       Consider refactoring
+      def mutexes
+        @mutexes ||= Hash.new { |h, k| h[k] = Mutex.new }
+      end
+
+      def index_sessions(user:)
+        new(*flight_desktop, 'list', user: user).run
+      end
+
+      def find_session(id, user:)
+        new(*flight_desktop, 'show', id, user: user).run
+      end
+
+      def start_session(desktop, user:)
+        new(*flight_desktop, 'start', desktop, user: user).run
+      end
+
+      def webify_session(id, user:)
+        new(*flight_desktop, 'webify', id, user: user).run
+      end
+
+      def kill_session(id, user:)
+        new(*flight_desktop, 'kill', id, user: user).run
+      end
+
+      def clean_session(id, user:)
+        new(*flight_desktop, 'clean', id, user: user).run
+      end
+
+      def verify_desktop(desktop, user:)
+        new(*flight_desktop, 'verify', desktop, '--force', user: user).run
+      end
+
+      def avail_desktops(user:)
+        new(*flight_desktop, 'avail', user: user).run
+      end
+
+      def set(desktop: nil, geometry: nil, user:)
+        params = {
+          desktop: desktop, geometry: geometry
+        }.reject { |_, v| v.nil? }.map { |k, v| "#{k}=#{v}" }
+        new(*flight_desktop, 'set', *params, user: user).run
+      end
+
+      private
+
+      def flight_desktop
+        Flight.config.desktop_command
+      end
+    end
+
+    def initialize(*cmd, user:, stdin: nil, timeout: nil, env: {})
+      @timeout = timeout || Flight.config.command_timeout
+      @cmd = cmd
+      @user = user
+      @stdin = stdin
+      @env = {
+        # XXX
+        'PATH' => Flight.config.command_path,
+        'HOME' => passwd.dir,
+        'USER' => @user,
+        'LOGNAME' => @user
+      }.merge(env)
+    end
+
+    def run(&block)
+      result =
+        self.class.mutexes[@user].synchronize do
+          Flight.logger.debug("Running subprocess (#{@user}): #{stringified_cmd}")
+          sp = Subprocess.new(
+            env: @env,
+            logger: Flight.logger,
+            timeout: @timeout,
+            username: @user,
+          )
+          sp.run(@cmd, @stdin, &block)
+        end
+      parse_result(result)
+      log_command(result)
+      result
+    end
+
+    private
+
+    def passwd
+      @passwd ||= Etc.getpwnam(@user)
+    end
+
+    def parse_result(result)
+      if result.exitstatus == 0 && expect_json_response?
+        begin
+          unless result.stdout.nil? || result.stdout.strip == ''
+            result.stdout = JSON.parse(result.stdout)
+          end
+        rescue JSON::ParserError
+          result.exitstatus = 128
+        end
+      end
+    end
+
+    def expect_json_response?
+      @cmd.any? {|i| i.strip == '--json'}
+    end
+
+    def log_command(result)
+      Flight.logger.info <<~INFO.chomp
+        COMMAND: #{stringified_cmd}
+        USER: #{@user}
+        PID: #{result.pid}
+        STATUS: #{result.exitstatus}
+      INFO
+      Flight.logger.debug <<~DEBUG
+        ENV:
+        #{JSON.pretty_generate @env}
+        STDIN:
+        #{@stdin.to_s}
+        STDOUT:
+        #{result.stdout}
+        STDERR:
+        #{result.stderr}
+      DEBUG
+    end
+
+    def stringified_cmd
+      @stringified_cmd ||= @cmd
+        .map { |s| s.empty? ? '""' : s }.join(' ')
+    end
+  end
+end

@@ -45,5 +45,5 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'active_support/core_ext/hash/keys'
 require 'flight_desktop_restapi'
 
-FlightAuth::CLI.new(FlightDesktopRestAPI.config.shared_secret_path, 'desktop-restapi-dev')
+FlightAuth::CLI.new(Flight.config.shared_secret_path, 'desktop-restapi-dev')
                .run(*ARGV)

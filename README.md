@@ -12,121 +12,74 @@ browser access to interactive GUI desktop sessions within HPC environments.
 
 ## Installation
 
-### From source
+### Installing with the OpenFlight package repos
 
-Flight Desktop RestAPI requires a recent version of Ruby and `bundler`.
+Flight Desktop RestAPI is available as part of the *Flight Web Suite*.  This is
+the easiest method for installing Flight Desktop RestAPI and all its
+dependencies.  It is documented in [the OpenFlight
+Documentation](https://use.openflighthpc.org/installing-web-suite/install.html#installing-flight-web-suite).
 
-The following will install from source using `git`:
+### Manual Installation
+
+#### Prerequisites
+
+Flight Desktop RestAPI is developed and tested with Ruby version `2.7.1` and
+`bundler` `2.1.4`.  Other versions may work but currently are not officially
+supported.
+
+Flight Desktop RestAPI requires Flight Desktop which can be installed by following
+the [Flight Desktop installation
+instructions](https://github.com/openflighthpc/flight-desktop/blob/master/README.md#installation)
+
+#### Install Flight Desktop RestAPI
+
+The following will install from source using `git`.  The `master` branch is
+the current development version and may not be appropriate for a production
+installation. Instead a tagged version should be checked out.
 
 ```
 git clone https://github.com/alces-flight/flight-desktop-restapi.git
 cd flight-desktop-restapi
-bin/bundle install --without development test pry --path vendor
+git checkout <tag>
+bundle config set --local with default
+bundle config set --local without development test pry
+bundle install
 ```
 
-### Installing with Flight Runway
-
-Flight Runway provides a Ruby environment and command-line helpers for running
-openflightHPC tools.  Flight Desktop RestAPI integrates with Flight Runway to
-provide an easy way for multiple users of an HPC environment to use the tool.
-
-To install Flight Runway, see the [Flight Runway installation
-docs](https://github.com/openflighthpc/flight-runway#installation).
-
-These instructions assume that `flight-runway` has been installed from
-the openflightHPC yum repository and that either [system-wide
-integration](https://github.com/openflighthpc/flight-runway#system-wide-integration) has been enabled or the
-[`flight-starter`](https://github.com/openflighthpc/flight-starter) tool has been
-installed and the environment activated with the `flight start` command.
-
- * Enable the Alces Flight RPM repository:
-
-    ```
-    yum install https://alces-flight.s3-eu-west-1.amazonaws.com/repos/alces-flight/x86_64/alces-flight-release-1-1.noarch.rpm
-    ```
-
- * Rebuild your `yum` cache:
-
-    ```
-    yum makecache
-    ```
-    
- * Install the `flight-desktop-restapi` RPM:
-
-    ```
-    [root@myhost ~]# yum install flight-desktop-restapi
-    ```
-
- * Install a websockify server such as `python-websockify`:
-
-    ```
-    [root@myhost ~]# yum install python-websockify
-    ```
-
- * Optionally, install screenshotting programs.  If these are not installed
-   the session previews will not work.
-
-    ```
-    [root@myhost ~]# yum install netpbm-progs xorg-x11-apps
-    ```
-
- * Enable HTTPs support
-
-    Flight Desktop RestAPI is designed to operate over HTTPs connections.  You
-    can enable HTTPs with self-signed certificates by running the commands
-    below.  You will be asked to enter a passphrase and to answer some
-    questions about your organization.
-
-    ```
-    [root@myhost ~]# flight www enable-https
-    ```
+The manual installation of Flight Desktop RestAPI comes preconfigured to run in
+development mode.  If installing Flight Desktop RestAPI manually for production
+usage you will want to follow the instructions to [set the environment
+mode](docs/environment-modes.md) to `standalone`.
 
 
 ## Configuration
 
-Making changes to the default configuration is optional and can be achieved by editing the [flight-desktop-restapi.yaml](etc/flight-desktop-restapi.yaml) file.
+Flight Desktop RestAPI comes preconfigured to work out of the box without
+further configuration.  However, it is likely that you will want to change its
+`bind_address` and `base_url`.  Please refer to the [configuration
+file](etc/desktop-restapi.yaml) for more details and a full list of
+configuration options.
 
-This version has been tested with:
+### Environment Modes
 
-`flight-desktop` version `1.8.0`
+If Flight Desktop RestAPI has been installed manually for production usage you
+will want to follow the instructions to [set the environment
+mode](docs/environment-modes.md) to `standalone`.
 
 ## Operation
 
-### When installed with Flight Runway
-
-The server can be started by running the following command:
+The service can be started by running:
 
 ```
-[root@myhost ~]# flight service start desktop-restapi
+bin/puma
 ```
 
-The server can be stopped by running the following command:
+See `bin/puma --help` for more help including how to set a pid file and how to
+redirect logs.
 
-```
-[root@myhost ~]# flight service stop desktop-restapi
-```
-
-### When installed from source
-
-The server can be started by running the following from the root directory of
-the source checkout.
-
-```
-bin/puma -p <port> -e production -d \
-          --redirect-append \
-          --redirect-stdout <stdout-log-file-path> \
-          --redirect-stderr <stderr-log-file-path> \
-          --pidfile         <pid-file-path>
-```
-
-You will need to determine appropriate paths for the log files and pid file.
-
-The server can be stopped by running the following from the root of the source
-checkout.
-
-```
-bin/pumactl stop
-```
+Typically, the Flight Desktop Webapp is used in conjunction with this API.
+However, if you wish to use this API directly, you will want to see the full
+[route documentation](docs/routes.md).
 
 # Contributing
 

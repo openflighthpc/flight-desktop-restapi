@@ -93,7 +93,7 @@ RSpec.configure do |c|
 
   def standard_get_headers
     $stdout = StringIO.new
-    FlightAuth::CLI.new(FlightDesktopRestAPI.config.shared_secret_path, 'desktop-restapi-test')
+    FlightAuth::CLI.new(Flight.config.shared_secret_path, 'desktop-restapi-test')
                    .run
     $stdout.rewind
     header 'Authorization', "Bearer #{$stdout.read.chomp}"
@@ -109,7 +109,7 @@ RSpec.configure do |c|
   # Enable FakeFS
   c.around do |example|
     FakeFS.with do
-      FakeFS::FileSystem.clone FlightDesktopRestAPI.config.shared_secret_path
+      FakeFS::FileSystem.clone Flight.config.shared_secret_path
       example.call
     end
   end

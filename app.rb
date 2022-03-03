@@ -35,7 +35,7 @@ configure do
   set :raise_errors, true
   set :show_exceptions, false
 
-  enable :cross_origin if FlightDesktopRestAPI.config.cors_domain
+  enable :cross_origin if Flight.config.cors_domain
 end
 
 not_found do
@@ -47,13 +47,13 @@ end
 error(HttpError) do
   e = env['sinatra.error']
   level = (e.is_a?(UnexpectedError) ? Logger::ERROR : Logger::DEBUG)
-  DEFAULT_LOGGER.add level, e.full_message
+  Flight.logger.add(level, e.full_message)
   { errors: [e] }.to_json
 end
 
 # Catches all other errors and returns a generic Internal Server Error
 error(StandardError) do
-  DEFAULT_LOGGER.error env['sinatra.error'].full_message
+  Flight.logger.error(env['sinatra.error'].full_message)
   { errors: [UnexpectedError.new] }.to_json
 end
 
@@ -61,7 +61,7 @@ end
 before do
   content_type 'application/json'
 
-  response.headers['Access-Control-Allow-Origin'] = FlightDesktopRestAPI.config.cors_domain if FlightDesktopRestAPI.config.cors_domain
+  response.headers['Access-Control-Allow-Origin'] = Flight.config.cors_domain if Flight.config.cors_domain
 end
 
 helpers do
@@ -71,8 +71,8 @@ end
 # Validates the user's credentials from the authorization header
 before do
   next if env['REQUEST_METHOD'] == 'OPTIONS'
-  auth = FlightDesktopRestAPI.config.auth_decoder.decode(
-    request.cookies[FlightDesktopRestAPI.app.config.sso_cookie_name],
+  auth = Flight.config.auth_decoder.decode(
+    request.cookies[Flight.config.sso_cookie_name],
     env['HTTP_AUTHORIZATION']
   )
   raise Unauthorized unless auth.valid?
@@ -102,7 +102,7 @@ before do
   end
 end
 
-if FlightDesktopRestAPI.config.cors_domain
+if Flight.config.cors_domain
   options "*" do
     response.headers["Allow"] = "GET, PUT, POST, DELETE, OPTIONS"
     response.headers["Access-Control-Allow-Methods"] = "GET, PUT, POST, DELETE, OPTIONS"

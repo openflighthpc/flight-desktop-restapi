@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 #==============================================================================
 # Copyright (C) 2020-present Alces Flight Ltd.
 #
@@ -27,20 +26,10 @@
 # https://github.com/openflighthpc/flight-desktop-restapi
 #===============================================================================
 
-DEFAULT_LOGGER = Logger.new($stdout).tap do |logger|
-  logger.level = case FlightDesktopRestAPI.config.log_level.to_s
-  when 'fatal'
-    Logger::FATAL
-  when 'error'
-    Logger::ERROR
-  when 'warn'
-    Logger::WARN
-  when 'info'
-    Logger::INFO
-  when 'debug'
-    Logger::DEBUG
-  else
-    raise 'Unrecognised log level'
-  end
-end
+# Require libraries that are used so pervasively throughout the app that it
+# isn't worth requiring them in the files that actually use them.
+#
+# This should be limited to as few libraries as possible.
+require 'json'
 
+Flight.assert_config_valid

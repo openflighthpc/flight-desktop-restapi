@@ -26,11 +26,8 @@
 # https://github.com/openflighthpc/flight-desktop-restapi
 #===============================================================================
 
-require_relative 'initializers/logger'
-
 # We need to require some files to run the desktop_types initializer.  We
 # should replace these requires with suitable `autoload`s.
-require_relative '../app/system_command'
 require_relative '../app/errors'
 require_relative '../app/models'
 require_relative 'initializers/desktop_types'
