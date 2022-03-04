@@ -50,7 +50,7 @@ module FlightDesktopRestAPI
       end
 
       def start_session(desktop, user:)
-        if Flight.config.remote_hosts.empty?
+        if Flight.config.remote_hosts.empty? || user == "root"
           new(*flight_desktop, 'start', desktop, user: user).run_local
         else
           host = Flight.config.remote_hosts.first
@@ -58,20 +58,37 @@ module FlightDesktopRestAPI
         end
       end
 
-      def webify_session(id, user:)
-        new(*flight_desktop, 'webify', id, user: user).run_local
+      def webify_session(id, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'webify', id, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'webify', id, user: user).run_local
+        end
       end
 
-      def kill_session(id, user:)
-        new(*flight_desktop, 'kill', id, user: user).run_local
+      def kill_session(id, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'kill', id, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'kill', id, user: user).run_local
+        end
       end
 
-      def clean_session(id, user:)
-        new(*flight_desktop, 'clean', id, user: user).run_local
+      def clean_session(id, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'clean', id, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'clean', id, user: user).run_local
+        end
       end
 
       def verify_desktop(desktop, user:)
-        new(*flight_desktop, 'verify', desktop, '--force', user: user).run_local
+        if Flight.config.remote_hosts.empty? || user == "root"
+          new(*flight_desktop, 'verify', desktop, '--force', user: user).run_local
+        else
+          host = Flight.config.remote_hosts.first
+          new(*flight_desktop, 'verify', desktop, '--force', user: user).run_remote(host)
+        end
       end
 
       def avail_desktops(user:)
@@ -79,9 +96,9 @@ module FlightDesktopRestAPI
       end
 
       def set(desktop: nil, geometry: nil, user:)
-        params = {
-          desktop: desktop, geometry: geometry
-        }.reject { |_, v| v.nil? }.map { |k, v| "#{k}=#{v}" }
+        params = { desktop: desktop, geometry: geometry }
+          .reject { |_, v| v.nil? }
+          .map { |k, v| "#{k}=#{v}" }
         new(*flight_desktop, 'set', *params, user: user).run_local
       end
 

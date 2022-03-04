@@ -217,19 +217,27 @@ class Session < Hashie::Trash
   end
 
   def kill(user:)
-    cmd = DesktopCLI.kill_session(id, user: user)
+    cmd = DesktopCLI.kill_session(id, user: user, remote_host: remote_host)
     return true if cmd.success?
-    cmd = DesktopCLI.clean_session(id, user: user)
+    cmd = DesktopCLI.clean_session(id, user: user, remote_host: remote_host)
     return true if cmd.success?
     raise InternalServerError.new(details: 'failed to delete the session')
   end
 
   def clean(user:)
-    if DesktopCLI.clean_session(id, user: user).success?
+    if DesktopCLI.clean_session(id, user: user, remote_host: remote_host).success?
       true
     else
       raise InternalServerError.new(details: 'failed to clean the session')
     end
+  end
+
+  def remote_host
+    remote? ? hostname : nil
+  end
+
+  def remote?
+    state == 'Remote'
   end
 end
 

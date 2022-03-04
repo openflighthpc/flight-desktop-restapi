@@ -31,9 +31,13 @@ require 'net/ssh'
 
 module FlightDesktopRestAPI
   class RemoteProcess
-    class Result < Struct.new(:stdout, :stderr, :exitstatus, :pid)
+    class Result < Struct.new(:stdout, :stderr, :exitstatus)
       def success?
         exitstatus == 0
+      end
+
+      def pid
+        "<Unknown: Remote process>"
       end
     end
 
@@ -58,7 +62,7 @@ module FlightDesktopRestAPI
         run_command(cmd, &block)
       end
 
-      Result.new(@stdout, @stderr, determine_exit_code, nil)
+      Result.new(@stdout, @stderr, determine_exit_code)
     end
 
     private
