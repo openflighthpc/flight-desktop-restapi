@@ -115,7 +115,6 @@ module FlightDesktopRestAPI
       @user = user
       @stdin = stdin
       @env = {
-        # XXX
         'PATH' => Flight.config.command_path,
         'HOME' => passwd.dir,
         'USER' => @user,
@@ -150,6 +149,7 @@ module FlightDesktopRestAPI
             keys: [Flight.config.ssh_private_key_path],
             logger: Flight.logger,
             timeout: @timeout,
+            connection_timeout: Flight.config.ssh_connection_timeout,
             username: @user,
           )
           process.run(@cmd, @stdin, &block)

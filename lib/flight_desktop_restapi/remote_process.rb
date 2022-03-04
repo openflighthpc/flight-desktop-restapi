@@ -41,14 +41,24 @@ module FlightDesktopRestAPI
       end
     end
 
-    def initialize(host:, env:, logger:, timeout:, username:, keys:, **ignored)
-      @host = host
+    def initialize(
+      connection_timeout:,
+      env:,
+      host:,
+      keys:,
+      logger:,
+      timeout:,
+      username:,
+      **ignored
+    )
+      @connection_timeout = connection_timeout
       @env = env
+      @host = host
+      @keys = keys
       @logger = logger
       @passwd = Etc.getpwnam(username)
       @timeout = timeout
       @username = username
-      @keys = keys
     end
 
     def run(cmd, stdin, &block)
@@ -75,7 +85,7 @@ module FlightDesktopRestAPI
 
     def run_command(cmd, &block)
       @logger.info("Starting SSH session #{cmd_debug(cmd)} keys=#{@keys.inspect}")
-      Net::SSH.start(@host, @username, keys: @keys) do |ssh|
+      Net::SSH.start(@host, @username, keys: @keys, timeout: @connection_timeout) do |ssh|
         ssh.open_channel do |channel|
           @logger.debug("SSH session started. Executing cmd #{cmd_debug(cmd)}")
           channel.exec(cmd_string(cmd)) do |ch, success|

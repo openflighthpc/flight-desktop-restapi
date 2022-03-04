@@ -69,12 +69,16 @@
 # =============================================================================
 # Desktop Command
 #
-# The prefix used to run the flight-desktop command line utility
+# The command to used to run the Flight Desktop executable.
+#
+# The default value uses the 'flight_ROOT' environment variable.  Expanding
+# environment variables is only supported when using the default value.  You
+# will need to use explicit full path if you override this value.
 #
 # The environment variable flight_DESKTOP_RESTAPI_desktop_command takes
 # precedence.
 # =============================================================================
-# desktop_command: flight desktop
+# desktop_command: ${flight_ROOT}/bin/flight desktop
 
 # ==============================================================================
 # Command PATH
@@ -92,6 +96,17 @@
 # The environment variable flight_DESKTOP_RESTAPI_command_timeout takes precedence.
 # ==============================================================================
 # command_timeout: 30
+
+# ==============================================================================
+# SSH Connection Timeout
+#
+# The maximum time to wait to establish an SSH connection to run a desktop
+# command on a remote host.
+#
+# The environment variable flight_DESKTOP_RESTAPI_ssh_connection_timeout takes
+# precedence.
+# ==============================================================================
+# ssh_connection_timeout: 5
 
 # ==============================================================================
 # Remote Hosts
