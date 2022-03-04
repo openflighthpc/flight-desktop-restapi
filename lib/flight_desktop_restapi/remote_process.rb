@@ -48,43 +48,35 @@ module FlightDesktopRestAPI
     end
 
     def run(cmd, stdin, &block)
+      # XXX Add support for wrting to stdin.
       @stdout = ""
       @stderr = ""
       @exit_code = nil
       @exit_signal = nil
-      # @read_threads = []
-      # start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      # create_pipes
-      run_command(cmd, &block)
-      # start_read_threads
-      # write_stdin(stdin)
-      # status = wait_for_process
-      # wait_for_read_threads(start_time)
-      # exit_code = determine_exit_code(status)
+      with_timout do
+        run_command(cmd, &block)
+      end
 
-      Result.new(@stdout, @stderr, @exit_code, nil)
+      Result.new(@stdout, @stderr, determine_exit_code, nil)
     end
 
     private
 
+    def with_timout(&block)
+      Timeout.timeout(@timeout, &block)
+    rescue Timeout::Error
+      @logger.info("Aborting remote process; timeout exceeded.")
+    end
+
     def run_command(cmd, &block)
-      # XXX Add timeout support.
-      # XXX Add support for wrting to stdin.
-      # XXX Avoid `cmd.join(" ").  Can we not use an array over SSH?
-
-      @logger.debug("Starting SSH session #{@username}@#{@host} with keys #{@keys.inspect}")
-      Net::SSH.start(@host, @username, keys: @keys, timeout: @timeout) do |ssh|
+      @logger.info("Starting SSH session #{cmd_debug(cmd)} keys=#{@keys.inspect}")
+      Net::SSH.start(@host, @username, keys: @keys) do |ssh|
         ssh.open_channel do |channel|
-          @logger.debug("Exec'ing cmd #{cmd.inspect}")
-
-          env = @env.map { |k, v| "#{k}=#{v}" }.join(" ")
-          env_and_cmd = "#{env} #{cmd.join(" ")}"
-
-          channel.exec(env_and_cmd) do |ch, success|
+          @logger.debug("SSH session started. Executing cmd #{cmd_debug(cmd)}")
+          channel.exec(cmd_string(cmd)) do |ch, success|
             unless success
               @logger.error("Failed to execute command")
-              # XXX Raise an exception of some sort or another.
             end
 
             channel.on_data do |ch, data|
@@ -98,19 +90,40 @@ module FlightDesktopRestAPI
             end
 
             channel.on_request("exit-status") do |ch, data|
-              @logger.debug("Received exit-status: #{data.inspect}")
               @exit_code = data.read_long
+              @logger.debug("Received exit-status: #{@exit_code}")
             end
 
             channel.on_request("exit-signal") do |ch, data|
-              @logger.debug("Received exit-signal: #{data.inspect}")
               @exit_signal = data.read_long
+              @logger.debug("Received exit-signal: #{@exit_signal}")
             end
           end
         end
 
         ssh.loop
       end
+    end
+
+    def determine_exit_code
+      if @exit_signal
+        @logger.debug "Inferring exit code from signal"
+        @exit_signal + 128
+      elsif @exit_code
+        @exit_code
+      else
+        @logger.debug "No exit code provided"
+        128
+      end
+    end
+
+    def cmd_string(cmd)
+      env_string = @env.map { |k, v| "#{k}=#{v}" }.join(" ")
+      [env_string, *cmd].join(" ")
+    end
+
+    def cmd_debug(cmd)
+      "(#{@username}@#{@host}) #{cmd.join(" ")}"
     end
   end
 end
