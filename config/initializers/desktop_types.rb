@@ -54,10 +54,15 @@ Concurrent::TimerTask.new(**opts) do |task|
     Desktop.instance_variable_set(:@cache, hash)
   end
 
-  models.each do |m|
-    sleep Flight.config.verify_sleep
-    m.verify_desktop(user: ENV['USER'])
+  if Flight.config.verified_desktops.empty?
+    models.each do |m|
+      sleep Flight.config.verify_sleep
+      m.verify_desktop(user: ENV['USER'])
+    end
+  else
+    Flight.logger.debug("Skipping verification")
   end
+
   hash = models.map { |m| [m.name, m] }.to_h
   Desktop.instance_variable_set(:@cache, hash)
 
