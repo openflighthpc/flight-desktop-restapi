@@ -80,10 +80,12 @@ module FlightDesktopRestAPI
         # and 2) add all groups for user.
         Process.groups = []
         Process.gid = @passwd.gid
+        Process.egid = @passwd.gid
         if @supplementary_groups
           Process.initgroups(@username, @passwd.gid)
         end
         Process.uid = @passwd.uid
+        Process.euid = @passwd.uid
         Process.setsid
 
         block.call if block

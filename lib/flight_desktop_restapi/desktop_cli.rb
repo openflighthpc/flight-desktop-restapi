@@ -1,5 +1,5 @@
 #==============================================================================
-# Copyright (C) 2020-present Alces Flight Ltd.
+# Copyright (C) 2022-present Alces Flight Ltd.
 #
 # This file is part of FlightDesktopRestAPI.
 #
@@ -143,13 +143,16 @@ module FlightDesktopRestAPI
       result =
         self.class.mutexes[@user].synchronize do
           Flight.logger.debug("Running remote process (#{@user}@#{host}): #{stringified_cmd}")
+          public_key_path = Flight.config.ssh_public_key_path
+
           process = RemoteProcess.new(
+            connection_timeout: Flight.config.ssh_connection_timeout,
             env: @env,
             host: host,
             keys: [Flight.config.ssh_private_key_path],
             logger: Flight.logger,
+            public_key_path: public_key_path,
             timeout: @timeout,
-            connection_timeout: Flight.config.ssh_connection_timeout,
             username: @user,
           )
           process.run(@cmd, @stdin, &block)

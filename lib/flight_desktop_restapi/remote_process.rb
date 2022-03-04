@@ -1,5 +1,5 @@
 #==============================================================================
-# Copyright (C) 2020-present Alces Flight Ltd.
+# Copyright (C) 2022-present Alces Flight Ltd.
 #
 # This file is part of FlightDesktopRestAPI.
 #
@@ -47,6 +47,7 @@ module FlightDesktopRestAPI
       host:,
       keys:,
       logger:,
+      public_key_path:,
       timeout:,
       username:,
       **ignored
@@ -57,6 +58,7 @@ module FlightDesktopRestAPI
       @keys = keys
       @logger = logger
       @passwd = Etc.getpwnam(username)
+      @public_key_path = public_key_path
       @timeout = timeout
       @username = username
     end
@@ -69,6 +71,7 @@ module FlightDesktopRestAPI
       @exit_signal = nil
 
       with_timout do
+        install_public_ssh_key
         run_command(cmd, &block)
       end
 
@@ -81,6 +84,15 @@ module FlightDesktopRestAPI
       Timeout.timeout(@timeout, &block)
     rescue Timeout::Error
       @logger.info("Aborting remote process; timeout exceeded.")
+    end
+
+    def install_public_ssh_key
+      InstallPublicSshKey.new(
+        env: @env,
+        key_path: @public_key_path,
+        timeout: @timeout,
+        username: @username
+      ).call
     end
 
     def run_command(cmd, &block)

@@ -117,9 +117,10 @@
 #
 # This requires 
 #
-# 1. Passwordless SSH access to be setup for each user of Flight Deskop
-#    RestAPI on each host.  Currently Flight Desktop RestAPI provides no
-#    support for configuring that.
+# 1. Passwordless SSH access to be setup for each user of Flight Desktop
+#    RestAPI on each host.  The passwordless SSH access will use the key
+#    specified in ssh_private_key_path.  The public key specified by
+#    ssh_public_key_path will be automatically installed for each user.
 # 2. The Flight Desktop CLI to be installed on each of the remote hosts.
 #
 # Additionally the following assumptions are made:
@@ -153,6 +154,20 @@
 # precedence.
 # ============================================================================== 
 # ssh_private_key_path: "etc/desktop-restapi/id_rsa"
+
+# ============================================================================== 
+# SSH Public Key Path
+#
+# The path to the public SSH key that is automatically installed for
+# passwordless SSH access to the remote hosts.
+#
+# Relative paths are expanded according to the "Relative path expansion" rules
+# described below.
+#
+# The environment variable flight_DESKTOP_RESTAPI_ssh_public_key_path takes
+# precedence.
+# ============================================================================== 
+# ssh_public_key_path: "etc/desktop-restapi/id_rsa.pub"
 
 # ============================================================================== 
 # Verified Desktops

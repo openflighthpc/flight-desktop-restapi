@@ -79,6 +79,9 @@ module FlightDesktopRestAPI
       transform: relative_to(root_path)
     validates :ssh_private_key_path, presence: true
     # XXX Validate that the path exists and is readable.
+    attribute :ssh_public_key_path, default: "etc/desktop-restapi/id_rsa.pub",
+      transform: relative_to(root_path)
+    validates :ssh_public_key_path, presence: true
 
     attribute :log_path, required: false,
               default: '/dev/stdout',
