@@ -64,13 +64,14 @@ module FlightDesktopRestAPI
       transform: :to_f
     validates :command_timeout, numericality: true, allow_blank: false
 
-    attribute :hosts, default: [ 'cnode01' ],
+    attribute :remote_hosts, default: [],
       transform: ->(v) { v.is_a?(Array) ? v : v.to_s.split }
-    validates :hosts, presence: true
+    validates :remote_hosts, presence: true, allow_blank: true
 
-    attribute :private_key_path, default: "etc/id_rsa",
+    attribute :ssh_private_key_path, default: "etc/desktop-restapi/id_rsa",
       transform: relative_to(root_path)
-    validates :private_key_path, presence: true
+    validates :ssh_private_key_path, presence: true
+    # XXX Validate that the path exists and is readable.
 
     attribute :log_path, required: false,
               default: '/dev/stdout',

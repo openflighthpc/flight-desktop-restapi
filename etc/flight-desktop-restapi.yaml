@@ -79,7 +79,8 @@
 # ==============================================================================
 # Command PATH
 # The PATH the desktop command will be executed with.
-# The environment variable flight_DESKTOP_RESTAPI_command_path takes precedence
+#
+# The environment variable flight_DESKTOP_RESTAPI_command_path takes precedence.
 # ==============================================================================
 # command_path: /usr/sbin:/usr/bin:/sbin:/bin
 
@@ -87,19 +88,67 @@
 # Command Timeout
 # The maximum time to wait when running a desktop command. Commands which
 # take longer then this period will be terminated.
-# The environment variable flight_DESKTOP_RESTAPI_command_timeout takes precedence
+#
+# The environment variable flight_DESKTOP_RESTAPI_command_timeout takes precedence.
 # ==============================================================================
 # command_timeout: 30
+
+# ==============================================================================
+# Remote Hosts
+#
+# A list of remote hosts that Flight Desktop RestAPI will start sessions on.
+# Flight Desktop RestAPI will SSH as the requesting user into one of the hosts
+# and run the Flight Desktop CLI to start (and manage) the desktop session.
+#
+# This requires 
+#
+# 1. Passwordless SSH access to be setup for each user of Flight Deskop
+#    RestAPI on each host.  Currently Flight Desktop RestAPI provides no
+#    support for configuring that.
+# 2. The Flight Desktop CLI to be installed on each of the remote hosts.
+#
+# Additionally the following assumptions are made:
+#
+# 1. Each users home directory is shared across each remote host *and* the host
+#    Flight Desktop RestAPI is running on.
+# 2. The same set of desktops have been prepared on each of the remote hosts
+#    *and* the host Flight Desktop RestAPI is running on.
+#
+# The host running Flight Desktop RestAPI can appear in this list.
+#
+# If this list is empty, all sessions will be started and managed on the
+# host running Flight Desktop RestAPI.  In this case there is no need for
+# passwordless SSH to be setup.
+#
+# The environment variable flight_DESKTOP_RESTAPI_remote_hosts takes
+# precedence and is interpreted as a space separated list of hostnames.
+# ==============================================================================
+# remote_hosts: []
+
+# ============================================================================== 
+# SSH Private Key Path
+#
+# The path to the private SSH key that is used for passwordless SSH access to
+# the remote hosts.
+#
+# Relative paths are expanded according to the "Relative path expansion" rules
+# described below.
+#
+# The environment variable flight_DESKTOP_RESTAPI_ssh_private_key_path takes
+# precedence.
+# ============================================================================== 
+# ssh_private_key_path: "etc/desktop-restapi/id_rsa"
 
 # =============================================================================
 # Shared Secret Path
 # The path to the file containing the shared secret used to verify the login
 # credentials.
 #
+# Relative paths are expanded according to the "Relative path expansion" rules
+# described below.
+#
 # The environment variable flight_DESKTOP_RESTAPI_shared_secret_path takes
 # precedence.
-#
-# Relative paths are expanded from the installation directory.
 # =============================================================================
 # shared_secret_path: etc/shared-secret.conf
 
@@ -111,6 +160,18 @@
 # precedence.
 # =============================================================================
 # sso_cookie_name: flight_login
+
+# ==============================================================================
+# Log Path
+# The file the logger will write to. It will write to standard error if
+# omitted.
+#
+# Relative paths are expanded according to the "Relative path expansion" rules
+# described below.
+#
+# The environment variable flight_DESKTOP_RESTAPI_log_path takes precedence.
+# ==============================================================================
+# log_path: /dev/stdout
 
 # =============================================================================
 # Log Level
@@ -127,7 +188,7 @@
 # comma separated string.
 #
 # The environment variable flight_DESKTOP_RESTAPI_xrandr_geometries takes
-# precedence.
+# precedence and is interpreted as a comma separated list of geometries.
 #
 # NOTE: These geometries will need to be available on all desktops which are
 #       accessible via flight-desktop.
@@ -146,3 +207,18 @@
 #   - 1024x768
 #   - 800x600
 #   - 640x480
+
+# ==============================================================================
+# Relative path expansion rules
+#
+# Relative paths, where supported, are expanded in one of two ways:
+#
+# 1. If Flight Desktop RestAPI was installed from the OpenFlight package repos,
+#    they will be expanded from the value of the `flight_ROOT` environment
+#    variable.
+# 2. Otherwise they will be expanded from the Flight Desktop RestAPI
+#    installation directory.
+#
+# More details can be found at
+# https://github.com/openflighthpc/flight-desktop-restapi/blob/master/docs/environment-modes.md
+# ==============================================================================
