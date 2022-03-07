@@ -55,6 +55,8 @@ GEM
       rack
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
+    request_store (1.5.1)
+      rack (>= 1.4)
     rspec (3.11.0)
       rspec-core (~> 3.11.0)
       rspec-expectations (~> 3.11.0)
@@ -107,6 +109,7 @@ DEPENDENCIES
   pry-byebug
   puma
   rack-test
+  request_store
   rspec
   rspec-collection_matchers
   sinatra

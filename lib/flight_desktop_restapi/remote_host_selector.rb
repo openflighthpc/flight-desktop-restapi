@@ -1,7 +1,5 @@
-# frozen_string_literal: true
-
 #==============================================================================
-# Copyright (C) 2020-present Alces Flight Ltd.
+# Copyright (C) 2022-present Alces Flight Ltd.
 #
 # This file is part of FlightDesktopRestAPI.
 #
@@ -27,34 +25,44 @@
 # https://github.com/openflighthpc/flight-desktop-restapi
 #===============================================================================
 
-source "https://rubygems.org"
+require 'etc'
+require 'pathname'
+require 'securerandom'
 
-git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
+module FlightDesktopRestAPI
+  class RemoteHostSelector
+    def initialize(hosts)
+      @hosts = hosts
+      @idx = -1
+    end
 
-gem 'activemodel', require: 'active_model'
-gem 'activesupport', require: 'active_support/all'
-gem 'concurrent-ruby'
-gem 'dotenv'
-gem 'flight_auth', github: "openflighthpc/flight_auth", branch: "297cb7241b820d334e5d593c4e237a81b83a9995"
-gem 'flight_configuration', github: 'openflighthpc/flight_configuration', tag: '0.6.1', branch: 'master'
-gem 'hashie'
-gem "net-ssh", "~> 6.1"
-gem 'puma'
-gem 'request_store'
-gem 'sinatra', require: 'sinatra/base'
-gem 'sinatra-namespace'
-gem 'sinatra-cross_origin'
+    def call
+      ( get_from_cache || round_robin ).tap do |host|
+        set_in_cache(host)
+      end
+    end
 
-group :development, :test do
-  group :pry do
-    gem 'pry'
-    gem 'pry-byebug'
+    private
+
+    def round_robin
+      @idx = -1 if @idx > @hosts.length - 1
+      @idx += 1
+      @hosts[@idx].tap do |host|
+        Flight.logger.debug("Round robin to host idx=#{@idx} host=#{host}")
+      end
+    end
+
+    def get_from_cache
+      cache_id = "remote_host_selector"
+      RequestStore[cache_id].tap do |host|
+        Flight.logger.debug("Host from cache host=#{host}")
+      end
+    end
+
+    def set_in_cache(host)
+      cache_id = "remote_host_selector"
+      RequestStore[cache_id] = host
+    end
+
   end
-end
-
-group :test do
-  gem 'fakefs', require: 'fakefs/safe'
-  gem 'rack-test'
-  gem 'rspec'
-  gem 'rspec-collection_matchers'
 end

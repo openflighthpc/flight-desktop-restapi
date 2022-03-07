@@ -43,6 +43,7 @@ configure do
 end
 
 app = Rack::Builder.new do
+  use RequestStore::Middleware
   map('/v2') { run Sinatra::Application }
 end
 
