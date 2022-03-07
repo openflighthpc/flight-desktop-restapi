@@ -217,19 +217,27 @@ class Session < Hashie::Trash
   end
 
   def kill(user:)
-    cmd = DesktopCLI.kill_session(id, user: user)
+    cmd = DesktopCLI.kill_session(id, user: user, remote_host: remote_host)
     return true if cmd.success?
-    cmd = DesktopCLI.clean_session(id, user: user)
+    cmd = DesktopCLI.clean_session(id, user: user, remote_host: remote_host)
     return true if cmd.success?
     raise InternalServerError.new(details: 'failed to delete the session')
   end
 
   def clean(user:)
-    if DesktopCLI.clean_session(id, user: user).success?
+    if DesktopCLI.clean_session(id, user: user, remote_host: remote_host).success?
       true
     else
       raise InternalServerError.new(details: 'failed to clean the session')
     end
+  end
+
+  def remote_host
+    remote? ? hostname : nil
+  end
+
+  def remote?
+    state == 'Remote'
   end
 end
 
@@ -285,8 +293,12 @@ class Desktop < Hashie::Trash
     }
   end
 
-  def verified?
-    verified
+  def verified?(ignore_config: false)
+    if !ignore_config && Flight.config.verified_desktops.include?(name)
+      true
+    else
+      verified
+    end
   end
 
   # NOTE: The start_session will attempt to verify the desktop if required
@@ -297,7 +309,7 @@ class Desktop < Hashie::Trash
   #         could break the regex match. Instead `flight desktop` should be
   #         updated to return different exit codes
   def start_session!(user:)
-    verify_desktop!(user: user) unless verified?
+    verify_desktop!(user: user) unless verified?(ignore_config: true)
     cmd = DesktopCLI.start_session(name, user: user)
     if /verified\Z/ =~ cmd.stderr
       verify_desktop!(user: user)

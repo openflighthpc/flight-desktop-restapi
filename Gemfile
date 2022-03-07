@@ -38,6 +38,7 @@ gem 'dotenv'
 gem 'flight_auth', github: "openflighthpc/flight_auth", branch: "297cb7241b820d334e5d593c4e237a81b83a9995"
 gem 'flight_configuration', github: 'openflighthpc/flight_configuration', tag: '0.6.1', branch: 'master'
 gem 'hashie'
+gem "net-ssh", "~> 6.1"
 gem 'puma'
 gem 'sinatra', require: 'sinatra/base'
 gem 'sinatra-namespace'
@@ -56,4 +57,3 @@ group :test do
   gem 'rspec'
   gem 'rspec-collection_matchers'
 end
-

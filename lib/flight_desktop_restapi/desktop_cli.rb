@@ -1,6 +1,5 @@
-# frozen_string_literal: true
 #==============================================================================
-# Copyright (C) 2020-present Alces Flight Ltd.
+# Copyright (C) 2022-present Alces Flight Ltd.
 #
 # This file is part of FlightDesktopRestAPI.
 #
@@ -43,42 +42,64 @@ module FlightDesktopRestAPI
       end
 
       def index_sessions(user:)
-        new(*flight_desktop, 'list', user: user).run
+        new(*flight_desktop, 'list', user: user).run_local
       end
 
       def find_session(id, user:)
-        new(*flight_desktop, 'show', id, user: user).run
+        new(*flight_desktop, 'show', id, user: user).run_local
       end
 
       def start_session(desktop, user:)
-        new(*flight_desktop, 'start', desktop, user: user).run
+        if Flight.config.remote_hosts.empty? || user == "root"
+          new(*flight_desktop, 'start', desktop, user: user).run_local
+        else
+          host = Flight.config.remote_hosts.first
+          new(*flight_desktop, 'start', desktop, user: user).run_remote(host)
+        end
       end
 
-      def webify_session(id, user:)
-        new(*flight_desktop, 'webify', id, user: user).run
+      def webify_session(id, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'webify', id, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'webify', id, user: user).run_local
+        end
       end
 
-      def kill_session(id, user:)
-        new(*flight_desktop, 'kill', id, user: user).run
+      def kill_session(id, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'kill', id, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'kill', id, user: user).run_local
+        end
       end
 
-      def clean_session(id, user:)
-        new(*flight_desktop, 'clean', id, user: user).run
+      def clean_session(id, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'clean', id, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'clean', id, user: user).run_local
+        end
       end
 
       def verify_desktop(desktop, user:)
-        new(*flight_desktop, 'verify', desktop, '--force', user: user).run
+        if Flight.config.remote_hosts.empty? || user == "root"
+          new(*flight_desktop, 'verify', desktop, '--force', user: user).run_local
+        else
+          host = Flight.config.remote_hosts.first
+          new(*flight_desktop, 'verify', desktop, '--force', user: user).run_remote(host)
+        end
       end
 
       def avail_desktops(user:)
-        new(*flight_desktop, 'avail', user: user).run
+        new(*flight_desktop, 'avail', user: user).run_local
       end
 
       def set(desktop: nil, geometry: nil, user:)
-        params = {
-          desktop: desktop, geometry: geometry
-        }.reject { |_, v| v.nil? }.map { |k, v| "#{k}=#{v}" }
-        new(*flight_desktop, 'set', *params, user: user).run
+        params = { desktop: desktop, geometry: geometry }
+          .reject { |_, v| v.nil? }
+          .map { |k, v| "#{k}=#{v}" }
+        new(*flight_desktop, 'set', *params, user: user).run_local
       end
 
       private
@@ -94,7 +115,6 @@ module FlightDesktopRestAPI
       @user = user
       @stdin = stdin
       @env = {
-        # XXX
         'PATH' => Flight.config.command_path,
         'HOME' => passwd.dir,
         'USER' => @user,
@@ -102,17 +122,40 @@ module FlightDesktopRestAPI
       }.merge(env)
     end
 
-    def run(&block)
+    def run_local(&block)
       result =
         self.class.mutexes[@user].synchronize do
           Flight.logger.debug("Running subprocess (#{@user}): #{stringified_cmd}")
-          sp = Subprocess.new(
+          process = Subprocess.new(
             env: @env,
             logger: Flight.logger,
             timeout: @timeout,
             username: @user,
           )
-          sp.run(@cmd, @stdin, &block)
+          process.run(@cmd, @stdin, &block)
+        end
+      parse_result(result)
+      log_command(result)
+      result
+    end
+
+    def run_remote(host, &block)
+      result =
+        self.class.mutexes[@user].synchronize do
+          Flight.logger.debug("Running remote process (#{@user}@#{host}): #{stringified_cmd}")
+          public_key_path = Flight.config.ssh_public_key_path
+
+          process = RemoteProcess.new(
+            connection_timeout: Flight.config.ssh_connection_timeout,
+            env: @env,
+            host: host,
+            keys: [Flight.config.ssh_private_key_path],
+            logger: Flight.logger,
+            public_key_path: public_key_path,
+            timeout: @timeout,
+            username: @user,
+          )
+          process.run(@cmd, @stdin, &block)
         end
       parse_result(result)
       log_command(result)

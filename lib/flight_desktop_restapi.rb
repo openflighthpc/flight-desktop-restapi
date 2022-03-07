@@ -28,5 +28,7 @@
 module FlightDesktopRestAPI
   autoload(:Configuration, 'flight_desktop_restapi/configuration')
   autoload(:DesktopCLI, 'flight_desktop_restapi/desktop_cli')
+  autoload(:InstallPublicSshKey, 'flight_desktop_restapi/install_public_ssh_key')
+  autoload(:RemoteProcess, 'flight_desktop_restapi/remote_process')
   autoload(:Subprocess, 'flight_desktop_restapi/subprocess')
 end

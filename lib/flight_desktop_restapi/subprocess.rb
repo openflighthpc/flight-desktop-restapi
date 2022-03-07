@@ -80,10 +80,12 @@ module FlightDesktopRestAPI
         # and 2) add all groups for user.
         Process.groups = []
         Process.gid = @passwd.gid
+        Process.egid = @passwd.gid
         if @supplementary_groups
           Process.initgroups(@username, @passwd.gid)
         end
         Process.uid = @passwd.uid
+        Process.euid = @passwd.uid
         Process.setsid
 
         block.call if block
@@ -142,7 +144,7 @@ module FlightDesktopRestAPI
           Process.wait(@pid)
         end
       rescue Timeout::Error
-        @logger.error("Sending #{signal} to #{@pid}")
+        @logger.info("Sending #{signal} to #{@pid}")
         Process.kill(-Signal.list[signal], @pid)
         signal = 'KILL'
         timeout = 1
@@ -154,12 +156,12 @@ module FlightDesktopRestAPI
     def determine_exit_code(status)
       if status.signaled?
         signame = Signal.signame(status.termsig)
-        @logger.warn "Inferring exit code from signal #{signame} (pid: #{@pid})"
+        @logger.debug("Inferring exit code from signal #{signame} (pid: #{@pid})")
         status.termsig + 128
       elsif status.exitstatus
         status.exitstatus
       else
-        @logger.error "No exit code provided (pid: #{@pid})!"
+        @logger.debug("No exit code provided (pid: #{@pid})")
         128
       end
     end
