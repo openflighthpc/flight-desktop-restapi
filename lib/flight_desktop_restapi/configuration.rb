@@ -139,6 +139,10 @@ module FlightDesktopRestAPI
       @auth_decoder ||= FlightAuth::Builder.new(shared_secret_path)
     end
 
+    def remote_host_selector
+      @_remote_host_selector ||= RemoteHostSelector.new(remote_hosts)
+    end
+
     private
 
     def is_array(attr)
