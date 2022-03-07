@@ -37,7 +37,7 @@ module FlightDesktopRestAPI
     include FlightConfiguration::RichActiveValidationErrorMessage
     include ActiveModel::Validations
 
-    application_name 'flight-desktop-restapi'
+    application_name 'desktop-restapi'
     user_config_files false
 
     attribute :bind_address, default: 'tcp://127.0.0.1:915'
