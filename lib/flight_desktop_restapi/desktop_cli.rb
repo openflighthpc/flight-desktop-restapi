@@ -50,7 +50,7 @@ module FlightDesktopRestAPI
       end
 
       def start_session(desktop, user:)
-        if remote_host = select_remote_host
+        if remote_host = select_remote_host(user)
           new(*flight_desktop, 'start', desktop, user: user).run_remote(remote_host)
         else
           new(*flight_desktop, 'start', desktop, user: user).run_local
@@ -82,7 +82,7 @@ module FlightDesktopRestAPI
       end
 
       def verify_desktop(desktop, user:)
-        if remote_host = select_remote_host
+        if remote_host = select_remote_host(user)
           new(*flight_desktop, 'verify', desktop, '--force', user: user).run_remote(remote_host)
         else
           new(*flight_desktop, 'verify', desktop, '--force', user: user).run_local
@@ -102,7 +102,7 @@ module FlightDesktopRestAPI
 
       private
 
-      def select_remote_host
+      def select_remote_host(user)
         return nil if user == "root"
         Flight.config.remote_host_selector.call
       end
