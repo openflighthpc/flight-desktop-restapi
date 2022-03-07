@@ -45,8 +45,8 @@ module FlightDesktopRestAPI
     private
 
     def round_robin
-      @idx = -1 if @idx > @hosts.length - 1
       @idx += 1
+      @idx = 0 if @idx > @hosts.length - 1
       @hosts[@idx].tap do |host|
         Flight.logger.debug("Round robin to host idx=#{@idx} host=#{host}")
       end
