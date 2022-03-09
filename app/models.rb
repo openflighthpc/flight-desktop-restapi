@@ -107,7 +107,7 @@ class Session < Hashie::Trash
       return session unless session.webport == '0' && session.state == 'Active'
 
       # Webify the session and reload
-      DesktopCLI.webify_session(id, user: user)
+      DesktopCLI.webify_session(id, user: user, remote_host: session.remote_host)
       find(id, reload: false, user: user)
     else
       # Technically multiple errors conditions could cause the command to fail
