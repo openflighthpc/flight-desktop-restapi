@@ -306,8 +306,8 @@ class Desktop < Hashie::Trash
     }
   end
 
-  def verified?(ignore_config: false)
-    if !ignore_config && Flight.config.verified_desktops.include?(name)
+  def verified?
+    if Flight.config.verified_desktops.include?(name)
       true
     else
       verified
@@ -322,7 +322,6 @@ class Desktop < Hashie::Trash
   #         could break the regex match. Instead `flight desktop` should be
   #         updated to return different exit codes
   def start_session!(user:)
-    verify_desktop!(user: user) unless verified?(ignore_config: true)
     cmd = DesktopCLI.start_session(name, user: user)
     if /verified\Z/ =~ cmd.stderr
       verify_desktop!(user: user)
