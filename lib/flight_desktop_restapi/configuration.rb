@@ -25,8 +25,9 @@
 # https://github.com/openflighthpc/flight-desktop-restapi
 #===============================================================================
 
-require 'active_support/core_ext/hash/keys'
 require 'active_model'
+require 'active_support/core_ext/hash/keys'
+require 'ipaddr'
 
 require 'flight_configuration'
 module FlightDesktopRestAPI
@@ -66,6 +67,9 @@ module FlightDesktopRestAPI
     attribute :command_timeout, default: 30,
       transform: :to_f
     validates :command_timeout, numericality: true, allow_blank: false
+
+    attribute :websocket_ip_range,
+      transform: ->(value) { value.nil? ? nil : IPAddr.new(value) }
 
     attribute :remote_hosts, default: [],
       transform: ->(v) { v.is_a?(Array) ? v : v.to_s.split }
