@@ -142,6 +142,28 @@
 # remote_hosts: []
 
 # ============================================================================== 
+# WebSocket IP Address Range
+#
+# Used to control the IP address that connections to the session's websockify
+# process should be made on.
+#
+# By default, Desktop RestAPI will attempt to connect to the session's
+# websockify process using the primary IP address of the machine that the
+# session is running on.
+#
+# If `websocket_ip_range` is set, Desktop RestAPI will instead use the IP
+# address of that machine that is within the specified IP address range.
+#
+# E.g., if the machine running the session has IP addresses 10.0.0.21 and
+# 1.2.3.4, then by default, connections to the websockify process will be made
+# on 1.2.3.4.  To use the 10.0.0.21 address instead, set
+#
+#     websocket_ip_range: "10.0.0.0/8".
+#
+# ============================================================================== 
+# websocket_ip_range:
+
+# ============================================================================== 
 # SSH Private Key Path
 #
 # The path to the private SSH key that is used for passwordless SSH access to

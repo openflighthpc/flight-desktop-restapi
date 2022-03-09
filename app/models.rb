@@ -79,7 +79,7 @@ class Session < Hashie::Trash
           id: parts[0],
           desktop: parts[1],
           hostname: parts[2],
-          ip: parts[3],
+          primary_ip: parts[3],
           port: parts[5],
           webport: parts[6],
           password: parts[7],
@@ -87,7 +87,8 @@ class Session < Hashie::Trash
           created_at: parts[9],
           last_accessed_at: parts[10],
           screenshot_path: parts[11],
-          user: user
+          user: user,
+          ips: (parts[12] || "").split("|")
         )
       end
     else
@@ -127,7 +128,7 @@ class Session < Hashie::Trash
       when 'Identity'
         :id
       when 'Host IP'
-        :ip
+        :primary_ip
       when 'Hostname'
         :hostname
       when 'Port'
@@ -146,6 +147,9 @@ class Session < Hashie::Trash
         :last_accessed_at
       when 'Screenshot Path'
         :screenshot_path
+      when 'IPs'
+        value = value.split("|")
+        :ips
       else
         next # Ignore any extraneous keys
       end
@@ -156,7 +160,8 @@ class Session < Hashie::Trash
 
   property :id
   property :desktop
-  property :ip
+  property :primary_ip
+  property :ips
   property :hostname
   property :port, coerce: String
   property :webport, coerce: String
@@ -194,6 +199,14 @@ class Session < Hashie::Trash
 
   def load_screenshot
     @screenshot ||= Screenshot.new(self).read
+  end
+
+  def ip
+    return primary_ip if ips.nil? || ips.empty?
+    return primary_ip if Flight.config.websocket_ip_range.nil?
+
+    selected = ips.detect { |ip| Flight.config.websocket_ip_range.include?(ip) }
+    selected || primary_ip
   end
 
   def to_json

@@ -46,7 +46,7 @@ RSpec.describe '/sessions' do
     opts[:id] ||= SecureRandom.uuid
     opts[:password] ||= SecureRandom.uuid.split('-').first
     opts[:desktop] ||= AUTO_DESKTOP.sample
-    opts[:ip] ||= "10.10.#{rand(0..255)}.#{last_ip}"
+    opts[:primary_ip] ||= "10.10.#{rand(0..255)}.#{last_ip}"
     opts[:port] ||= (6000 + last_ip).to_s
     opts[:webport] ||= (45000 + last_ip).to_s
 
@@ -74,7 +74,7 @@ RSpec.describe '/sessions' do
       stderr: '', code: 0, stdout: <<~STDOUT
         Identity        #{subject.id}
         Type    #{subject.desktop}
-        Host IP #{subject.ip}
+        Host IP #{subject.primary_ip}
         Hostname        #{subject.hostname}
         Port    #{subject.port}
         Display IGNORE_THIS_FIELD
@@ -86,7 +86,7 @@ RSpec.describe '/sessions' do
   let(:index_multiple_stub) do
     raise 'FakeFS is not activated!' unless FakeFS.activated?
     stdout = sessions.each_with_index.map do |s, idx|
-      "#{s.id}\t#{s.desktop}\t#{s.hostname}\t#{s.ip}\t#{idx}\t#{s.port}\t#{s.webport}\t#{s.password}\t#{s.state}"
+      "#{s.id}\t#{s.desktop}\t#{s.hostname}\t#{s.primary_ip}\t#{idx}\t#{s.port}\t#{s.webport}\t#{s.password}\t#{s.state}"
     end.join("\n")
     SystemCommand.new(stdout: stdout, stderr: '', code: 0)
   end
@@ -160,7 +160,7 @@ RSpec.describe '/sessions' do
           id: '135c07c2-5c9f-4e32-9372-a408d2bbe621',
           desktop: 'xfce',
           hostname: 'example.com',
-          ip: '10.101.0.3',
+          primary_ip: '10.101.0.3',
           port: 5903,
           webport: 41303,
           password: '5wroliv5',
@@ -178,7 +178,7 @@ RSpec.describe '/sessions' do
             id: '0362d58b-f29a-4b99-9a0a-277c902daa55',
             desktop: 'gnome',
             hostname: 'example.com',
-            ip: '10.101.0.1',
+            primary_ip: '10.101.0.1',
             port: 5901,
             webport: 41301,
             password: 'GovCosh6',
@@ -188,7 +188,7 @@ RSpec.describe '/sessions' do
             id: '135036a4-0471-4014-ab56-7b65648895df',
             desktop: 'kde',
             hostname: 'example.com',
-            ip: '10.101.0.2',
+            primary_ip: '10.101.0.2',
             port: 5902,
             webport: 41302,
             password: 'Dinzeph3',
@@ -296,7 +296,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: "11a8e4a1-9371-4b60-8d00-20441a4f2612",
           desktop: "gnome",
-          ip: '10.1.0.1',
+          primary_ip: '10.1.0.1',
           hostname: 'example.com',
           port: 5956,
           webport: 41304,
@@ -309,7 +309,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: "d5255917-c8c3-4d00-bf1c-546445f8956f",
           desktop: "gnome",
-          ip: '10.1.0.2',
+          primary_ip: '10.1.0.2',
           hostname: 'example.com',
           port: 5957,
           webport: 41305,
@@ -322,7 +322,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: "dc17e3d0-ed68-493f-a7ec-5029310cd0f6",
           desktop: "gnome",
-          ip: '10.1.0.3',
+          primary_ip: '10.1.0.3',
           hostname: 'example.com',
           port: 5957,
           webport: 41306,
@@ -417,7 +417,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: "72e2f8d3-dea5-465c-b8d5-67336c7f8680",
           desktop: "xfce",
-          ip: '10.101.0.4',
+          primary_ip: '10.101.0.4',
           hostname: 'example.com',
           port: 5942,
           webport: 41307,
@@ -445,7 +445,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: "72e2f8d3-dea5-465c-b8d5-67336c7f8680",
           desktop: "xfce",
-          ip: '10.101.0.4',
+          primary_ip: '10.101.0.4',
           hostname: 'example.com',
           port: 5942,
           webport: 41308,
@@ -472,7 +472,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: "6d1f1937-3812-486b-9bfb-38c3c85b34e9",
           desktop: "kde",
-          ip: '10.101.0.5',
+          primary_ip: '10.101.0.5',
           hostname: 'example.com',
           port: 5944,
           webport: 41309,
@@ -527,7 +527,7 @@ RSpec.describe '/sessions' do
           A '#{subject.desktop}' desktop session has been started.
           Identity        #{subject.id}
           Type    #{subject.desktop}
-          Host IP #{subject.ip}
+          Host IP #{subject.primary_ip}
           Hostname        #{subject.hostname}
           Port    #{subject.port}
           Display IGNORE_THIS_FIELD
@@ -618,7 +618,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: '3335bb08-8d91-40fd-a973-da05bdbf3636',
           desktop: desktop,
-          ip: '10.1.0.2',
+          primary_ip: '10.1.0.2',
           hostname: 'example.com',
           port: 5905,
           webport: 41310,
@@ -738,7 +738,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: '9633d854-1790-43b2-bf06-f6dc46bb4859',
           desktop: desktop,
-          ip: '10.1.0.3',
+          primary_ip: '10.1.0.3',
           hostname: 'example.com',
           port: 5906,
           webport: 41311,
@@ -770,7 +770,7 @@ RSpec.describe '/sessions' do
         build_session(
           id: '9633d854-1790-43b2-bf06-f6dc46bb4859',
           desktop: desktop,
-          ip: '10.1.0.3',
+          primary_ip: '10.1.0.3',
           hostname: 'example.com',
           port: 5906,
           webport: 41311,
@@ -814,7 +814,7 @@ RSpec.describe '/sessions' do
       build_session(
         id: 'ed36dedb-5003-4765-b8dc-0c1cc2922dd7',
         desktop: 'gnome',
-        ip: '10.1.0.4',
+        primary_ip: '10.1.0.4',
         hostname: 'example.com',
         port: 5906,
         webport: 41312,
