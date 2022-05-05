@@ -152,6 +152,7 @@ class Session < Hashie::Trash
         value = value.split("|")
         :ips
       when 'Name'
+        value = nil if value.blank?
         :name
       else
         next # Ignore any extraneous keys
