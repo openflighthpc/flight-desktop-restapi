@@ -88,7 +88,8 @@ class Session < Hashie::Trash
           last_accessed_at: parts[10],
           screenshot_path: parts[11],
           user: user,
-          ips: (parts[12] || "").split("|")
+          ips: (parts[12] || "").split("|"),
+          name: parts[13]
         )
       end
     else
@@ -150,6 +151,9 @@ class Session < Hashie::Trash
       when 'IPs'
         value = value.split("|")
         :ips
+      when 'Name'
+        value = nil if value.blank?
+        :name
       else
         next # Ignore any extraneous keys
       end
@@ -168,6 +172,7 @@ class Session < Hashie::Trash
   property :password
   property :user
   property :state
+  property :name
   property :created_at, transform_with: ->(time) {
     case time
     when Time
@@ -223,7 +228,8 @@ class Session < Hashie::Trash
       'password' => password,
       'state' => state,
       'created_at' => created_at&.rfc3339,
-      'last_accessed_at' => last_accessed_at&.rfc3339
+      'last_accessed_at' => last_accessed_at&.rfc3339,
+      'name' => name
     }.tap do |h|
       h['screenshot'] = screenshot ? Base64.encode64(screenshot) : nil
     end
