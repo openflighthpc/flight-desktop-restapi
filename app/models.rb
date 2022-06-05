@@ -327,11 +327,11 @@ class Desktop < Hashie::Trash
   #         This makes the toggle brittle as a minor change in error message
   #         could break the regex match. Instead `flight desktop` should be
   #         updated to return different exit codes
-  def start_session!(user:)
-    cmd = DesktopCLI.start_session(name, user: user)
+  def start_session!(user:, session_name: nil)
+    cmd = DesktopCLI.start_session(name, user: user, session_name: session_name)
     if /verified\Z/ =~ cmd.stderr
       verify_desktop!(user: user)
-      cmd = DesktopCLI.start_session(name, user: user)
+      cmd = DesktopCLI.start_session(name, user: user, session_name: session_name)
     end
     raise InternalServerError unless cmd.success?
     Session.build_from_output(cmd.stdout.split("\n"), user: user)

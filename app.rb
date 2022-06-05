@@ -177,7 +177,7 @@ namespace '/sessions' do
   post do
     status 201
     if params[:desktop]
-      current_desktop.start_session!(user: current_user).to_json
+      current_desktop.start_session!(user: current_user, session_name: params[:name]).to_json
     else
       Desktop.default(user: current_user).start_session!(user: current_user).to_json
     end

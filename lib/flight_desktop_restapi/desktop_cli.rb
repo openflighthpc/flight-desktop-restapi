@@ -49,11 +49,11 @@ module FlightDesktopRestAPI
         new(*flight_desktop, 'show', id, user: user).run_local
       end
 
-      def start_session(desktop, user:)
+      def start_session(desktop, user:, session_name: nil)
         if remote_host = select_remote_host(user)
-          new(*flight_desktop, 'start', desktop, user: user).run_remote(remote_host)
+          new(*flight_desktop, 'start', desktop, "--name", session_name, user: user).run_remote(remote_host)
         else
-          new(*flight_desktop, 'start', desktop, user: user).run_local
+          new(*flight_desktop, 'start', desktop, "--name", session_name, user: user).run_local
         end
       end
 
@@ -133,7 +133,7 @@ module FlightDesktopRestAPI
             env: @env,
             logger: Flight.logger,
             timeout: @timeout,
-            username: @user,
+            username: @user
           )
           process.run(@cmd, @stdin, &block)
         end
@@ -156,7 +156,7 @@ module FlightDesktopRestAPI
             logger: Flight.logger,
             public_key_path: public_key_path,
             timeout: @timeout,
-            username: @user,
+            username: @user
           )
           process.run(@cmd, @stdin, &block)
         end
