@@ -189,12 +189,21 @@ namespace '/sessions' do
         params[:id]
       end
 
+      def name_param
+        params[:name]
+      end
+
       def current_session
         Session.find(id_param, user: current_user).tap do |s|
           next if s
           raise NotFound.new(type: 'session', id: id_param)
         end
       end
+    end
+
+    post '/rename' do
+      status 200
+      current_session.rename(name: name_param)
     end
 
     get do

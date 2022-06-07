@@ -251,6 +251,14 @@ class Session < Hashie::Trash
     end
   end
 
+  def rename(name:)
+    if DesktopCLI.rename_session(id, name: name, user: user, remote_host: remote_host).success?
+      true
+    else
+      raise InternalServerError.new(details: 'failed to rename the session')
+    end
+  end
+
   def remote_host
     remote? ? hostname : nil
   end

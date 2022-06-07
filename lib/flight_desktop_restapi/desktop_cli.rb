@@ -57,6 +57,14 @@ module FlightDesktopRestAPI
         end
       end
 
+      def rename_session(id, name:, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'rename', id, name, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'rename', id, name, user: user).run_local
+        end
+      end
+
       def webify_session(id, user:, remote_host:)
         if remote_host
           new(*flight_desktop, 'webify', id, user: user).run_remote(remote_host)
