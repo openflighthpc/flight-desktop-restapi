@@ -112,7 +112,7 @@ module FlightDesktopRestAPI
       end
 
       def name_param(session_name)
-	["--name", session_name] if session_name
+        ["--name", session_name] if !session_name.blank?
       end
     end
 
@@ -137,7 +137,7 @@ module FlightDesktopRestAPI
             env: @env,
             logger: Flight.logger,
             timeout: @timeout,
-            username: @user
+            username: @user,
           )
           process.run(@cmd, @stdin, &block)
         end
@@ -160,7 +160,7 @@ module FlightDesktopRestAPI
             logger: Flight.logger,
             public_key_path: public_key_path,
             timeout: @timeout,
-            username: @user
+            username: @user,
           )
           process.run(@cmd, @stdin, &block)
         end
