@@ -120,7 +120,7 @@ module FlightDesktopRestAPI
       end
 
       def name_param(session_name)
-        ["--name", session_name] if !session_name.blank?
+        ["--name", session_name] unless session_name.blank?
       end
     end
 
