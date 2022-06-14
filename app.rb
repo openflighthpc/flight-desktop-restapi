@@ -66,6 +66,10 @@ end
 
 helpers do
   attr_accessor :current_user
+
+  def name_param
+    params[:name]
+  end
 end
 
 # Validates the user's credentials from the authorization header
@@ -187,10 +191,6 @@ namespace '/sessions' do
     helpers do
       def id_param
         params[:id]
-      end
-
-      def name_param
-        params[:name]
       end
 
       def current_session
