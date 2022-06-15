@@ -251,6 +251,14 @@ class Session < Hashie::Trash
     end
   end
 
+  def rename(name:)
+    if DesktopCLI.rename_session(id, name: name, user: user, remote_host: remote_host).success?
+      true
+    else
+      raise InternalServerError.new(details: 'failed to rename the session')
+    end
+  end
+
   def remote_host
     remote? ? hostname : nil
   end
@@ -327,11 +335,11 @@ class Desktop < Hashie::Trash
   #         This makes the toggle brittle as a minor change in error message
   #         could break the regex match. Instead `flight desktop` should be
   #         updated to return different exit codes
-  def start_session!(user:)
-    cmd = DesktopCLI.start_session(name, user: user)
+  def start_session!(user:, session_name: nil)
+    cmd = DesktopCLI.start_session(name, user: user, session_name: session_name)
     if /verified\Z/ =~ cmd.stderr
       verify_desktop!(user: user)
-      cmd = DesktopCLI.start_session(name, user: user)
+      cmd = DesktopCLI.start_session(name, user: user, session_name: session_name)
     end
     raise InternalServerError unless cmd.success?
     Session.build_from_output(cmd.stdout.split("\n"), user: user)

@@ -49,11 +49,19 @@ module FlightDesktopRestAPI
         new(*flight_desktop, 'show', id, user: user).run_local
       end
 
-      def start_session(desktop, user:)
+      def start_session(desktop, user:, session_name: nil)
         if remote_host = select_remote_host(user)
-          new(*flight_desktop, 'start', desktop, user: user).run_remote(remote_host)
+          new(*flight_desktop, 'start', desktop, *name_param(session_name), user: user).run_remote(remote_host)
         else
-          new(*flight_desktop, 'start', desktop, user: user).run_local
+          new(*flight_desktop, 'start', desktop, *name_param(session_name), user: user).run_local
+        end
+      end
+
+      def rename_session(id, name:, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'rename', id, name, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'rename', id, name, user: user).run_local
         end
       end
 
@@ -109,6 +117,10 @@ module FlightDesktopRestAPI
 
       def flight_desktop
         Flight.config.desktop_command
+      end
+
+      def name_param(session_name)
+        ["--name", session_name] unless session_name.blank?
       end
     end
 

@@ -66,6 +66,10 @@ end
 
 helpers do
   attr_accessor :current_user
+
+  def name_param
+    params[:name]
+  end
 end
 
 # Validates the user's credentials from the authorization header
@@ -177,7 +181,7 @@ namespace '/sessions' do
   post do
     status 201
     if params[:desktop]
-      current_desktop.start_session!(user: current_user).to_json
+      current_desktop.start_session!(user: current_user, session_name: name_param).to_json
     else
       Desktop.default(user: current_user).start_session!(user: current_user).to_json
     end
@@ -195,6 +199,11 @@ namespace '/sessions' do
           raise NotFound.new(type: 'session', id: id_param)
         end
       end
+    end
+
+    post '/rename' do
+      status 200
+      current_session.rename(name: name_param)
     end
 
     get do
