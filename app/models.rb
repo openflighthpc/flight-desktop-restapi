@@ -349,7 +349,7 @@ class Desktop < Hashie::Trash
     cmd = DesktopCLI.verify_desktop(name, user: user)
     self.verified = if /already been verified\.\Z/ =~ cmd.stdout.chomp
       true
-    elsif /flight desktop prepare/ =~ cmd.stdout
+    elsif /^\s*(flight)? desktop prepare\b/ =~ cmd.stdout
       false
     elsif cmd.success?
       true
