@@ -240,14 +240,14 @@ class Session < Hashie::Trash
     return true if cmd.success?
     cmd = DesktopCLI.clean_session(id, user: user, remote_host: remote_host)
     return true if cmd.success?
-    raise InternalServerError.new(details: 'failed to delete the session')
+    raise InternalServerError.new(detail: 'failed to delete the session')
   end
 
   def clean(user:)
     if DesktopCLI.clean_session(id, user: user, remote_host: remote_host).success?
       true
     else
-      raise InternalServerError.new(details: 'failed to clean the session')
+      raise InternalServerError.new(detail: 'failed to clean the session')
     end
   end
 
@@ -255,7 +255,15 @@ class Session < Hashie::Trash
     if DesktopCLI.rename_session(id, name: name, user: user, remote_host: remote_host).success?
       true
     else
-      raise InternalServerError.new(details: 'failed to rename the session')
+      raise InternalServerError.new(detail: 'failed to rename the session')
+    end
+  end
+
+  def resize(geometry:)
+    if DesktopCLI.resize_session(id, geometry: geometry, user: user, remote_host: remote_host).success?
+      true
+    else
+      raise InternalServerError.new(detail: 'failed to resize the session')
     end
   end
 
@@ -335,11 +343,11 @@ class Desktop < Hashie::Trash
   #         This makes the toggle brittle as a minor change in error message
   #         could break the regex match. Instead `flight desktop` should be
   #         updated to return different exit codes
-  def start_session!(user:, session_name: nil)
-    cmd = DesktopCLI.start_session(name, user: user, session_name: session_name)
+  def start_session!(user:, session_name: nil, geometry: nil)
+    cmd = DesktopCLI.start_session(name, user: user, session_name: session_name, geometry: geometry)
     if /verified\Z/ =~ cmd.stderr
       verify_desktop!(user: user)
-      cmd = DesktopCLI.start_session(name, user: user, session_name: session_name)
+      cmd = DesktopCLI.start_session(name, user: user, session_name: session_name, geometry: geometry)
     end
     raise InternalServerError unless cmd.success?
     Session.build_from_output(cmd.stdout.split("\n"), user: user)

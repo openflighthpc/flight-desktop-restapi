@@ -49,11 +49,11 @@ module FlightDesktopRestAPI
         new(*flight_desktop, 'show', id, user: user).run_local
       end
 
-      def start_session(desktop, user:, session_name: nil)
+      def start_session(desktop, user:, session_name: nil, geometry: nil)
         if remote_host = select_remote_host(user)
-          new(*flight_desktop, 'start', desktop, *name_param(session_name), user: user).run_remote(remote_host)
+          new(*flight_desktop, 'start', desktop, *name_param(session_name), *geometry_param(geometry), user: user).run_remote(remote_host)
         else
-          new(*flight_desktop, 'start', desktop, *name_param(session_name), user: user).run_local
+          new(*flight_desktop, 'start', desktop, *name_param(session_name), *geometry_param(geometry), user: user).run_local
         end
       end
 
@@ -62,6 +62,14 @@ module FlightDesktopRestAPI
           new(*flight_desktop, 'rename', id, name, user: user).run_remote(remote_host)
         else
           new(*flight_desktop, 'rename', id, name, user: user).run_local
+        end
+      end
+
+      def resize_session(id, geometry:, user:, remote_host:)
+        if remote_host
+          new(*flight_desktop, 'resize', id, geometry, user: user).run_remote(remote_host)
+        else
+          new(*flight_desktop, 'resize', id, geometry, user: user).run_local
         end
       end
 
@@ -121,6 +129,10 @@ module FlightDesktopRestAPI
 
       def name_param(session_name)
         ["--name", session_name] unless session_name.blank?
+      end
+
+      def geometry_param(geometry)
+        ["--geometry", geometry] unless geometry.blank?
       end
     end
 
