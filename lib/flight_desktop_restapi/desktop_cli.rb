@@ -65,7 +65,7 @@ module FlightDesktopRestAPI
         end
       end
 
-      def resize_session(id, geometry:, remote_host:)
+      def resize_session(id, geometry:, user:, remote_host:)
         if remote_host
           new(*flight_desktop, 'resize', id, geometry, user: user).run_remote(remote_host)
         else

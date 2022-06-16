@@ -259,8 +259,8 @@ class Session < Hashie::Trash
     end
   end
 
-  def resize(size:)
-    if DesktopCLI.resize_session(id, size: size, user: user, remote_host: remote_host).success?
+  def resize(geometry:)
+    if DesktopCLI.resize_session(id, geometry: geometry, user: user, remote_host: remote_host).success?
       true
     else
       raise InternalServerError.new(details: 'failed to resize the session')

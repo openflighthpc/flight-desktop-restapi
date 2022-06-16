@@ -67,8 +67,8 @@ end
 helpers do
   attr_accessor :current_user
 
-  def size_param
-    params[:size]
+  def geometry_param
+    params[:geometry]
   end
 
   def name_param
@@ -185,7 +185,7 @@ namespace '/sessions' do
   post do
     status 201
     if params[:desktop]
-      current_desktop.start_session!(user: current_user, session_name: name_param, geometry: size_param).to_json
+      current_desktop.start_session!(user: current_user, session_name: name_param, geometry: geometry_param).to_json
     else
       Desktop.default(user: current_user).start_session!(user: current_user).to_json
     end
@@ -212,7 +212,7 @@ namespace '/sessions' do
 
     post '/resize' do
       status 200
-      current_session.resize(size: size_param)
+      current_session.resize(geometry: geometry_param)
     end
 
     get do
