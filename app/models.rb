@@ -240,14 +240,14 @@ class Session < Hashie::Trash
     return true if cmd.success?
     cmd = DesktopCLI.clean_session(id, user: user, remote_host: remote_host)
     return true if cmd.success?
-    raise InternalServerError.new(details: 'failed to delete the session')
+    raise InternalServerError.new(detail: 'failed to delete the session')
   end
 
   def clean(user:)
     if DesktopCLI.clean_session(id, user: user, remote_host: remote_host).success?
       true
     else
-      raise InternalServerError.new(details: 'failed to clean the session')
+      raise InternalServerError.new(detail: 'failed to clean the session')
     end
   end
 
@@ -255,7 +255,7 @@ class Session < Hashie::Trash
     if DesktopCLI.rename_session(id, name: name, user: user, remote_host: remote_host).success?
       true
     else
-      raise InternalServerError.new(details: 'failed to rename the session')
+      raise InternalServerError.new(detail: 'failed to rename the session')
     end
   end
 
@@ -263,7 +263,7 @@ class Session < Hashie::Trash
     if DesktopCLI.resize_session(id, geometry: geometry, user: user, remote_host: remote_host).success?
       true
     else
-      raise InternalServerError.new(details: 'failed to resize the session')
+      raise InternalServerError.new(detail: 'failed to resize the session')
     end
   end
 
