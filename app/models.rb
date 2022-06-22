@@ -90,7 +90,8 @@ class Session < Hashie::Trash
           user: user,
           ips: (parts[12] || "").split("|"),
           name: parts[13],
-          job_id: parts[14]
+          job_id: parts[14],
+          available_geometries: parts[15]
         )
       end
     else
