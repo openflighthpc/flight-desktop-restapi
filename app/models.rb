@@ -90,7 +90,8 @@ class Session < Hashie::Trash
           user: user,
           ips: (parts[12] || "").split("|"),
           name: parts[13],
-          job_id: parts[14]
+          job_id: parts[14],
+          available_geometries: parts[15]
         )
       end
     else
@@ -158,6 +159,11 @@ class Session < Hashie::Trash
       when 'Job ID'
         value = nil if value.blank?
         :job_id
+      when 'Geometry'
+        :geometry
+      when 'Available Geometries'
+        value = value.split("|")
+        :available_geometries
       else
         next # Ignore any extraneous keys
       end
@@ -178,6 +184,8 @@ class Session < Hashie::Trash
   property :state
   property :name
   property :job_id
+  property :geometry
+  property :available_geometries
   property :created_at, transform_with: ->(time) {
     case time
     when Time
@@ -235,7 +243,9 @@ class Session < Hashie::Trash
       'created_at' => created_at&.rfc3339,
       'last_accessed_at' => last_accessed_at&.rfc3339,
       'name' => name,
-      'job_id' => job_id
+      'job_id' => job_id,
+      'geometry' => geometry,
+      'available_geometries' => available_geometries
     }.tap do |h|
       h['screenshot'] = screenshot ? Base64.encode64(screenshot) : nil
     end
