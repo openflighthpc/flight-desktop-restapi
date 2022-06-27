@@ -160,10 +160,10 @@ class Session < Hashie::Trash
         value = nil if value.blank?
         :job_id
       when 'Geometry'
-	:geometry
+        :geometry
       when 'Available Geometries'
-	value = value.split("|")
-	:available_geometries
+        value = value.split("|")
+        :available_geometries
       else
         next # Ignore any extraneous keys
       end
