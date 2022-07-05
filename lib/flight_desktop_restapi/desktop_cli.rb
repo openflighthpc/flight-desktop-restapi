@@ -74,14 +74,14 @@ module FlightDesktopRestAPI
       end
 
       def configure_session(id, geometry:, name:, user:, remote_host:)
-        # Currently, the webapp and the API have no knowledge of which
-        # desktop types support being resized.  This causes something of an
-        # issue when trying to configure such a session.  Currently, we return
-        # only the success of the resize attempt, allowing the webapp to
-        # report whether the session was resized or not.  This should
-        # obviously be changed at some point.
-        rename_session(id, name: name, user: user, remote_host: remote_host)
-        resize_session(id, geometry: geometry, user: user, remote_host: remote_host)
+        results = []
+        if name.present?
+          results << rename_session(id, name: name, user: user, remote_host: remote_host)
+        end
+        if geometry.present?
+          results << resize_session(id, geometry: geometry, user: user, remote_host: remote_host)
+        end
+        results.compact.last
       end
 
       def webify_session(id, user:, remote_host:)

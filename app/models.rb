@@ -280,6 +280,9 @@ class Session < Hashie::Trash
   end
 
   def resize(geometry:)
+    unless capabilities.include?("resizable")
+      raise BadRequest.new(detail: "session type is not resizable")
+    end
     if DesktopCLI.resize_session(id, geometry: geometry, user: user, remote_host: remote_host).success?
       true
     else
@@ -288,6 +291,9 @@ class Session < Hashie::Trash
   end
 
   def configure(name:, geometry:)
+    if geometry.present? && !capabilities.include?("resizable")
+      raise BadRequest.new(detail: "session type is not resizable")
+    end
     if DesktopCLI.configure_session(
         id,
         name: name,
