@@ -90,8 +90,7 @@ class Session < Hashie::Trash
           user: user,
           ips: (parts[12] || "").split("|"),
           name: parts[13],
-          job_id: parts[14],
-          available_geometries: parts[15]
+          job_id: parts[14]
         )
       end
     else
@@ -164,6 +163,9 @@ class Session < Hashie::Trash
       when 'Available Geometries'
         value = value.split("|")
         :available_geometries
+      when 'Capabilities'
+        value = value.split("|")
+        :capabilities
       else
         next # Ignore any extraneous keys
       end
@@ -186,6 +188,7 @@ class Session < Hashie::Trash
   property :job_id
   property :geometry
   property :available_geometries
+  property :capabilities
   property :created_at, transform_with: ->(time) {
     case time
     when Time
@@ -245,7 +248,8 @@ class Session < Hashie::Trash
       'name' => name,
       'job_id' => job_id,
       'geometry' => geometry,
-      'available_geometries' => available_geometries
+      'available_geometries' => available_geometries,
+      'capabilities' => capabilities,
     }.tap do |h|
       h['screenshot'] = screenshot ? Base64.encode64(screenshot) : nil
     end
@@ -276,6 +280,9 @@ class Session < Hashie::Trash
   end
 
   def resize(geometry:)
+    unless capabilities.include?("resizable")
+      raise BadRequest.new(detail: "session type is not resizable")
+    end
     if DesktopCLI.resize_session(id, geometry: geometry, user: user, remote_host: remote_host).success?
       true
     else
@@ -284,6 +291,9 @@ class Session < Hashie::Trash
   end
 
   def configure(name:, geometry:)
+    if geometry.present? && !capabilities.include?("resizable")
+      raise BadRequest.new(detail: "session type is not resizable")
+    end
     if DesktopCLI.configure_session(
         id,
         name: name,
