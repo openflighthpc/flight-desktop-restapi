@@ -283,6 +283,21 @@ class Session < Hashie::Trash
     end
   end
 
+  def configure(name:, geometry:)
+    if DesktopCLI.configure_session(
+        id,
+        name: name,
+        geometry: geometry,
+        user: user,
+        remote_host: remote_host
+    ).success?
+      true
+    else
+      raise InternalServerError.new(detail: 'failed to configure the session')
+    end
+  end
+
+
   def remote_host
     remote? ? hostname : nil
   end

@@ -215,6 +215,11 @@ namespace '/sessions' do
       current_session.resize(geometry: geometry_param)
     end
 
+    post '/configure' do
+      status 200
+      current_session.configure(name: name_param, geometry: geometry_param)
+    end
+
     get do
       current_session.tap { |s| s.load_screenshot if include_screenshot? }
                      .to_json
