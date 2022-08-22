@@ -28,6 +28,7 @@
 require 'etc'
 require 'timeout'
 require 'net/ssh'
+require 'shellwords'
 
 module FlightDesktopRestAPI
   class RemoteProcess
@@ -145,11 +146,11 @@ module FlightDesktopRestAPI
 
     def cmd_string(cmd)
       env_string = @env.map { |k, v| "#{k}=#{v}" }.join(" ")
-      [env_string, *cmd].join(" ")
+      [env_string, cmd.shelljoin].join(" ")
     end
 
     def cmd_debug(cmd)
-      "(#{@username}@#{@host}) #{cmd.join(" ")}"
+      "(#{@username}@#{@host}) #{cmd_string(cmd)}"
     end
   end
 end
