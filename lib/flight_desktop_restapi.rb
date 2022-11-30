@@ -32,4 +32,5 @@ module FlightDesktopRestAPI
   autoload(:RemoteHostSelector, 'flight_desktop_restapi/remote_host_selector')
   autoload(:RemoteProcess, 'flight_desktop_restapi/remote_process')
   autoload(:Subprocess, 'flight_desktop_restapi/subprocess')
+  autoload(:EnvParser, 'flight_desktop_restapi/env_parser')
 end

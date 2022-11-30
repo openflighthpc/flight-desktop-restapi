@@ -99,7 +99,10 @@ module FlightDesktopRestAPI
                 end
               end
 
-    attribute :lang, default: 'en_US.UTF-8'
+    attribute :default_locale_file, default: "/etc/default/locale"
+
+    attribute :fallback_lang, default: 'en_US.UTF-8'
+    validates :fallback_lang, presence: true
 
     attribute :log_level, default: 'info'
     validates :log_level, inclusion: {
@@ -147,6 +150,18 @@ module FlightDesktopRestAPI
 
     def remote_host_selector
       @_remote_host_selector ||= RemoteHostSelector.new(remote_hosts)
+    end
+
+    def lang
+      l =
+        begin
+          if File.exist?(default_locale_file)
+            EnvParser.parse(File.read(default_locale_file))['LANG']
+          end
+        rescue TypeError
+          nil
+        end
+      l || fallback_lang
     end
 
     private
