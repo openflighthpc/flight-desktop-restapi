@@ -164,6 +164,14 @@
 # websocket_ip_range:
 
 # ============================================================================== 
+# lang
+#
+# The value of the LANG environment variable to set when launching a desktop
+# session.
+# ============================================================================== 
+# lang: en_US.UTF-8
+
+# ============================================================================== 
 # SSH Private Key Path
 #
 # The path to the private SSH key that is used for passwordless SSH access to

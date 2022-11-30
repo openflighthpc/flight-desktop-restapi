@@ -99,6 +99,8 @@ module FlightDesktopRestAPI
                 end
               end
 
+    attribute :lang, default: 'en_US.UTF-8'
+
     attribute :log_level, default: 'info'
     validates :log_level, inclusion: {
       within: %w(fatal error warn info debug disabled),
