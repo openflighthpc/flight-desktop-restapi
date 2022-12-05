@@ -156,7 +156,8 @@ module FlightDesktopRestAPI
         'PATH' => Flight.config.command_path,
         'HOME' => passwd.dir,
         'USER' => @user,
-        'LOGNAME' => @user
+        'LOGNAME' => @user,
+        'LANG' => Flight.config.lang
       }.merge(env)
     end
 

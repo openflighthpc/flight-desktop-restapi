@@ -164,6 +164,29 @@
 # websocket_ip_range:
 
 # ============================================================================== 
+# Default locale file
+#
+# The file from which to read the LANG setting.  Desktop sessions will be
+# started with LANG set to the value in this file.  If the file doesn't exist,
+# or it doesn't contain a LANG setting, the fallback_lang value will be used.
+#
+# The environment variable flight_DESKTOP_RESTAPI_default_locale_file takes
+# precedence.
+# ============================================================================== 
+# default_locale_file: /etc/default/locale
+
+# ============================================================================== 
+# Fallback LANG
+#
+# If the LANG cannot be read from default_locale_file, this value is used
+# instead.
+#
+# The environment variable flight_DESKTOP_RESTAPI_fallback_lang takes
+# precedence.
+# ============================================================================== 
+# fallback_lang: en_US.UTF-8
+
+# ============================================================================== 
 # SSH Private Key Path
 #
 # The path to the private SSH key that is used for passwordless SSH access to
