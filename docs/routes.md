@@ -88,7 +88,7 @@ HTTP/2 200 OK
 
 Update the configuration.
 
-``
+```
 PATCH /configs/user
 Authorization: Bearer <token>
 Content-Type: application/json
